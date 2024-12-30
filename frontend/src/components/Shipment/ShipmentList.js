@@ -1,4 +1,3 @@
-// src/components/Shipment/ShipmentList.js
 import React, { useEffect, useState } from 'react';
 import { getAllShipments, deleteShipment } from '../../api/shipmentService';
 import ShipmentForm from './ShipmentForm';
@@ -25,7 +24,7 @@ const ShipmentList = () => {
     const handleDelete = async (id) => {
         try {
             await deleteShipment(id);
-            setShipments(shipments.filter(shipment => shipment.id !== id)); // Remove the deleted shipment from the list
+            setShipments(shipments.filter(shipment => shipment.id !== id));  // Remove the deleted shipment from the list
         } catch (error) {
             console.error('Error deleting shipment:', error);
         }
@@ -36,29 +35,64 @@ const ShipmentList = () => {
     };
 
     const handleShipmentUpdated = () => {
-        fetchShipments(); // Refresh the shipment list after updating
-        setSelectedShipment(null); // Reset the selected shipment
+        fetchShipments();  // Refresh the shipment list after updating
+        setSelectedShipment(null);  // Reset the selected shipment
     };
 
     return (
-        <div>
-            <h2>Shipments</h2>
-            {loading ? <p>Loading...</p> : (
-                <ul>
-                    {shipments.map((shipment) => (
-                        <li key={shipment.id}>
-                            <span>{shipment.trackingNumber} - {shipment.origin} to {shipment.destination}</span>
-                            <button onClick={() => handleEdit(shipment)}>Edit</button>
-                            <button onClick={() => handleDelete(shipment.id)}>Delete</button>
-                        </li>
-                    ))}
-                </ul>
-            )}
+        <div className="p-6 bg-gray-100 min-h-screen">
+            <h2 className="text-2xl font-bold mb-4">Shipments</h2>
             <ShipmentForm 
                 selectedShipment={selectedShipment} 
                 onShipmentAdded={fetchShipments} 
                 onShipmentUpdated={handleShipmentUpdated} 
             />
+            
+            
+                <div className="overflow-x-auto mt-6">
+                    <table className="min-w-full bg-white border rounded-lg shadow-md">
+                        <thead>
+                            <tr>
+                                <th className="px-6 py-3 border-b-2 text-left text-sm font-semibold text-gray-600">Tracking Number</th>
+                                <th className="px-6 py-3 border-b-2 text-left text-sm font-semibold text-gray-600">Origin</th>
+                                <th className="px-6 py-3 border-b-2 text-left text-sm font-semibold text-gray-600">Destination</th>
+                                <th className="px-6 py-3 border-b-2 text-left text-sm font-semibold text-gray-600">Status</th>
+                                <th className="px-6 py-3 border-b-2 text-left text-sm font-semibold text-gray-600">Estimated Delivery Date</th>
+                                <th className="px-6 py-3 border-b-2 text-left text-sm font-semibold text-gray-600">Actions</th>
+                            </tr>
+                        </thead>
+                        {loading ? (
+                <p>Loading...</p>
+            ) : (<tbody>
+                            {shipments.map((shipment) => (
+                                <tr key={shipment.id} className="border-t">
+                                    <td className="px-6 py-4 text-gray-700">{shipment.trackingNumber}</td>
+                                    <td className="px-6 py-4 text-gray-700">{shipment.origin}</td>
+                                    <td className="px-6 py-4 text-gray-700">{shipment.destination}</td>
+                                    <td className="px-6 py-4 text-gray-700">{shipment.status}</td>
+                                    <td className="px-6 py-4 text-gray-700">{shipment.estimatedDeliveryDate}</td>
+                                    <td className="px-6 py-4 text-gray-700 space-x-4">
+                                        <button
+                                            onClick={() => handleEdit(shipment)}
+                                            className="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(shipment.id)}
+                                            className="px-4 py-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody> )}
+                    </table>
+                </div>
+           
+
+            
         </div>
     );
 };

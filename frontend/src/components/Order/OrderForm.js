@@ -1,7 +1,5 @@
-// src/components/OrderForm.js
 import React, { useState, useEffect } from 'react';
-//import { createOrder, updateOrder } from './api/orderService';
-import { createOrder,updateOrder } from '../../api/orderService';
+import { createOrder, updateOrder } from '../../api/orderService';
 
 const OrderForm = ({ fetchOrders, selectedOrder, setSelectedOrder }) => {
     const [form, setForm] = useState({ customerName: '', product: '', quantity: '', status: '' });
@@ -34,13 +32,60 @@ const OrderForm = ({ fetchOrders, selectedOrder, setSelectedOrder }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input type="text" name="customerName" value={form.customerName} onChange={handleChange} placeholder="Customer Name" required />
-            <input type="text" name="product" value={form.product} onChange={handleChange} placeholder="Product" required />
-            <input type="number" name="quantity" value={form.quantity} onChange={handleChange} placeholder="Quantity" required />
-            <input type="text" name="status" value={form.status} onChange={handleChange} placeholder="Status" required />
-            <button type="submit">{selectedOrder ? "Update Order" : "Create Order"}</button>
-            {selectedOrder && <button onClick={() => setSelectedOrder(null)}>Cancel</button>}
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
+            <input
+                type="text"
+                name="customerName"
+                value={form.customerName}
+                onChange={handleChange}
+                placeholder="Customer Name"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="text"
+                name="product"
+                value={form.product}
+                onChange={handleChange}
+                placeholder="Product"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="number"
+                name="quantity"
+                value={form.quantity}
+                onChange={handleChange}
+                placeholder="Quantity"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="text"
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                placeholder="Status"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="flex space-x-4">
+                <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                    {selectedOrder ? "Update Order" : "Create Order"}
+                </button>
+                {selectedOrder && (
+                    <button
+                        type="button"
+                        onClick={() => setSelectedOrder(null)}
+                        className="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    >
+                        Cancel
+                    </button>
+                )}
+            </div>
         </form>
     );
 };

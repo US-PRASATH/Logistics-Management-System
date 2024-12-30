@@ -2,112 +2,147 @@ import React, { useState, useEffect } from 'react';
 import { createTransportPlan, updateTransportPlan } from '../../api/TransportPlanService';
 
 const TransportPlanForm = ({ selectedTransportPlan, onTransportPlanAdded, onTransportPlanUpdated }) => {
-    const [route, setRoute] = useState('');
-    const [carrier, setCarrier] = useState('');
-    const [loadCapacity, setLoadCapacity] = useState('');
-    const [schedule, setSchedule] = useState('');
+    const [transportPlanData, setTransportPlanData] = useState({
+        route: '',
+        carrier: '',
+        loadCapacity: '',
+        schedule: '',
+    });
+
     const [error, setError] = useState('');
 
-    // If a transport plan is selected, populate the form with its data
+    // Populate form fields if a transport plan is selected
     useEffect(() => {
         if (selectedTransportPlan) {
-            setRoute(selectedTransportPlan.route);
-            setCarrier(selectedTransportPlan.carrier);
-            setLoadCapacity(selectedTransportPlan.loadCapacity);
-            setSchedule(selectedTransportPlan.schedule);
+            setTransportPlanData({
+                route: selectedTransportPlan.route || '',
+                carrier: selectedTransportPlan.carrier || '',
+                loadCapacity: selectedTransportPlan.loadCapacity || '',
+                schedule: selectedTransportPlan.schedule || '',
+            });
         } else {
-            // Clear the form when no transport plan is selected
-            setRoute('');
-            setCarrier('');
-            setLoadCapacity('');
-            setSchedule('');
+            // Reset the form if no transport plan is selected
+            setTransportPlanData({
+                route: '',
+                carrier: '',
+                loadCapacity: '',
+                schedule: '',
+            });
         }
     }, [selectedTransportPlan]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setTransportPlanData({
+            ...transportPlanData,
+            [name]: value,
+        });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation for required fields
+        const { route, carrier, loadCapacity, schedule } = transportPlanData;
+
+        // Validate required fields
         if (!route || !carrier || !loadCapacity || !schedule) {
             setError('All fields are required');
             return;
         }
 
-        const transportPlanData = {
+        const transportPlanPayload = {
             route,
             carrier,
-            loadCapacity: parseInt(loadCapacity),
-            schedule: new Date(schedule), // Convert to Date format if necessary
+            loadCapacity: parseInt(loadCapacity, 10),
+            schedule: new Date(schedule),
         };
 
         try {
             if (selectedTransportPlan) {
-                // Update existing transport plan
-                await updateTransportPlan(selectedTransportPlan.id, transportPlanData);
-                onTransportPlanUpdated(); // Notify parent component to refresh list
+                await updateTransportPlan(selectedTransportPlan.id, transportPlanPayload);
+                onTransportPlanUpdated();
             } else {
-                // Create new transport plan
-                await createTransportPlan(transportPlanData);
-                onTransportPlanAdded(); // Notify parent component to refresh list
+                await createTransportPlan(transportPlanPayload);
+                onTransportPlanAdded();
             }
-            // Clear form after successful submission
-            setRoute('');
-            setCarrier('');
-            setLoadCapacity('');
-            setSchedule('');
+
+            // Reset the form on successful submission
+            setTransportPlanData({
+                route: '',
+                carrier: '',
+                loadCapacity: '',
+                schedule: '',
+            });
             setError('');
-        } catch (error) {
+        } catch (err) {
             setError('Error saving transport plan');
-            console.error(error);
+            console.error(err);
         }
     };
 
     return (
-        <div>
-            <h3>{selectedTransportPlan ? 'Edit Transport Plan' : 'Add Transport Plan'}</h3>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Route</label>
-                    <input
-                        type="text"
-                        value={route}
-                        onChange={(e) => setRoute(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Carrier</label>
-                    <input
-                        type="text"
-                        value={carrier}
-                        onChange={(e) => setCarrier(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Load Capacity</label>
-                    <input
-                        type="number"
-                        value={loadCapacity}
-                        onChange={(e) => setLoadCapacity(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Schedule</label>
-                    <input
-                        type="datetime-local"
-                        value={schedule}
-                        onChange={(e) => setSchedule(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit">
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <input
+                type="text"
+                name="route"
+                value={transportPlanData.route}
+                onChange={handleChange}
+                placeholder="Route"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="text"
+                name="carrier"
+                value={transportPlanData.carrier}
+                onChange={handleChange}
+                placeholder="Carrier"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="number"
+                name="loadCapacity"
+                value={transportPlanData.loadCapacity}
+                onChange={handleChange}
+                placeholder="Load Capacity"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="datetime-local"
+                name="schedule"
+                value={transportPlanData.schedule}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="flex space-x-4">
+                <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
                     {selectedTransportPlan ? 'Update Transport Plan' : 'Add Transport Plan'}
                 </button>
-            </form>
-        </div>
+                {selectedTransportPlan && (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setTransportPlanData({
+                                route: '',
+                                carrier: '',
+                                loadCapacity: '',
+                                schedule: '',
+                            })
+                        }
+                        className="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    >
+                        Cancel
+                    </button>
+                )}
+            </div>
+        </form>
     );
 };
 

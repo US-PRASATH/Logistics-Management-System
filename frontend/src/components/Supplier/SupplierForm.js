@@ -1,4 +1,3 @@
-// src/components/Supplier/SupplierForm.js
 import React, { useState, useEffect } from 'react';
 import { createSupplier, updateSupplier } from '../../api/supplierService';
 
@@ -28,11 +27,9 @@ const SupplierForm = ({ onSupplierAdded, selectedSupplier, onSupplierUpdated }) 
         e.preventDefault();
         try {
             if (selectedSupplier) {
-                // Update existing supplier
                 await updateSupplier(selectedSupplier.id, supplierData);
                 onSupplierUpdated(); // Refresh supplier list after update
             } else {
-                // Create new supplier
                 await createSupplier(supplierData);
                 onSupplierAdded(); // Refresh the supplier list after adding
             }
@@ -50,56 +47,66 @@ const SupplierForm = ({ onSupplierAdded, selectedSupplier, onSupplierUpdated }) 
     };
 
     return (
-        <div>
-            <h2>{selectedSupplier ? 'Edit Supplier' : 'Add New Supplier'}</h2>
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Name:
-                    <input
-                        type="text"
-                        name="name"
-                        value={supplierData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </label>
-                <br />
-                <label>
-                    Contact Info:
-                    <input
-                        type="text"
-                        name="contactInfo"
-                        value={supplierData.contactInfo}
-                        onChange={handleChange}
-                        required
-                    />
-                </label>
-                <br />
-                <label>
-                    Address:
-                    <input
-                        type="text"
-                        name="address"
-                        value={supplierData.address}
-                        onChange={handleChange}
-                        required
-                    />
-                </label>
-                <br />
-                <label>
-                    Performance Rating:
-                    <input
-                        type="text"
-                        name="performanceRating"
-                        value={supplierData.performanceRating}
-                        onChange={handleChange}
-                        required
-                    />
-                </label>
-                <br />
-                <button type="submit">{selectedSupplier ? 'Update Supplier' : 'Add Supplier'}</button>
-            </form>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
+            <input
+                type="text"
+                name="name"
+                value={supplierData.name}
+                onChange={handleChange}
+                placeholder="Name"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="text"
+                name="contactInfo"
+                value={supplierData.contactInfo}
+                onChange={handleChange}
+                placeholder="Contact Info"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="text"
+                name="address"
+                value={supplierData.address}
+                onChange={handleChange}
+                placeholder="Address"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="text"
+                name="performanceRating"
+                value={supplierData.performanceRating}
+                onChange={handleChange}
+                placeholder="Performance Rating"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="flex space-x-4">
+                <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                    {selectedSupplier ? 'Update Supplier' : 'Add Supplier'}
+                </button>
+                {selectedSupplier && (
+                    <button
+                        type="button"
+                        onClick={() => setSupplierData({
+                            name: '',
+                            contactInfo: '',
+                            address: '',
+                            performanceRating: '',
+                        })}
+                        className="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    >
+                        Cancel
+                    </button>
+                )}
+            </div>
+        </form>
     );
 };
 

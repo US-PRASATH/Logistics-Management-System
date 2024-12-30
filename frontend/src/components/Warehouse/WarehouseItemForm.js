@@ -1,86 +1,129 @@
-// src/components/WarehouseItem/WarehouseItemForm.js
 import React, { useState, useEffect } from 'react';
 import { createWarehouseItem, updateWarehouseItem } from '../../api/WarehouseItemService';
 
 const WarehouseItemForm = ({ selectedItem, onItemAdded, onItemUpdated }) => {
-    const [itemName, setItemName] = useState('');
-    const [category, setCategory] = useState('');
-    const [quantity, setQuantity] = useState('');
-    const [storageLocation, setStorageLocation] = useState('');
+    const [itemData, setItemData] = useState({
+        itemName: '',
+        category: '',
+        quantity: '',
+        storageLocation: '',
+    });
 
     useEffect(() => {
         if (selectedItem) {
-            setItemName(selectedItem.itemName);
-            setCategory(selectedItem.category);
-            setQuantity(selectedItem.quantity);
-            setStorageLocation(selectedItem.storageLocation);
+            setItemData({
+                itemName: selectedItem.itemName || '',
+                category: selectedItem.category || '',
+                quantity: selectedItem.quantity || '',
+                storageLocation: selectedItem.storageLocation || '',
+            });
+        } else {
+            setItemData({
+                itemName: '',
+                category: '',
+                quantity: '',
+                storageLocation: '',
+            });
         }
     }, [selectedItem]);
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setItemData({
+            ...itemData,
+            [name]: value,
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const itemData = { itemName, category, quantity, storageLocation };
 
         try {
             if (selectedItem) {
-                // Update existing item
                 await updateWarehouseItem(selectedItem.id, itemData);
                 onItemUpdated();
             } else {
-                // Create a new item
                 await createWarehouseItem(itemData);
                 onItemAdded();
             }
-            // Reset form after submission
-            setItemName('');
-            setCategory('');
-            setQuantity('');
-            setStorageLocation('');
+
+            // Reset form on successful submission
+            setItemData({
+                itemName: '',
+                category: '',
+                quantity: '',
+                storageLocation: '',
+            });
         } catch (error) {
             console.error('Error saving warehouse item:', error);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <h3>{selectedItem ? 'Edit Warehouse Item' : 'Add New Warehouse Item'}</h3>
-            <div>
-                <label>Item Name:</label>
-                <input 
-                    type="text" 
-                    value={itemName} 
-                    onChange={(e) => setItemName(e.target.value)} 
-                    required 
-                />
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
+            {/* <h3 className="text-lg font-semibold mb-4">
+                {selectedItem ? 'Edit Warehouse Item' : 'Add New Warehouse Item'}
+            </h3> */}
+            <input
+                type="text"
+                name="itemName"
+                value={itemData.itemName}
+                onChange={handleChange}
+                placeholder="Item Name"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="text"
+                name="category"
+                value={itemData.category}
+                onChange={handleChange}
+                placeholder="Category"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="number"
+                name="quantity"
+                value={itemData.quantity}
+                onChange={handleChange}
+                placeholder="Quantity"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+                type="text"
+                name="storageLocation"
+                value={itemData.storageLocation}
+                onChange={handleChange}
+                placeholder="Storage Location"
+                required
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="flex space-x-4">
+                <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                    {selectedItem ? 'Update Item' : 'Add Item'}
+                </button>
+                {selectedItem && (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setItemData({
+                                itemName: '',
+                                category: '',
+                                quantity: '',
+                                storageLocation: '',
+                            })
+                        }
+                        className="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    >
+                        Cancel
+                    </button>
+                )}
             </div>
-            <div>
-                <label>Category:</label>
-                <input 
-                    type="text" 
-                    value={category} 
-                    onChange={(e) => setCategory(e.target.value)} 
-                    required 
-                />
-            </div>
-            <div>
-                <label>Quantity:</label>
-                <input 
-                    type="number" 
-                    value={quantity} 
-                    onChange={(e) => setQuantity(e.target.value)} 
-                    required 
-                />
-            </div>
-            <div>
-                <label>Storage Location:</label>
-                <input 
-                    type="text" 
-                    value={storageLocation} 
-                    onChange={(e) => setStorageLocation(e.target.value)} 
-                    required 
-                />
-            </div>
-            <button type="submit">{selectedItem ? 'Update Item' : 'Add Item'}</button>
         </form>
     );
 };
