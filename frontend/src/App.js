@@ -15,7 +15,7 @@ const App = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect to login if not logged in and trying to access home
+   
     if (!isLoggedIn && window.location.pathname === "/") {
       navigate("/login");
     }
@@ -49,11 +49,11 @@ const App = () => {
           </div>
         </header>
         <Routes>
-          {/* Public Routes */}
+          
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
 
-          {/* Protected Routes */}
+          
           <Route
             path="/orders"
             element={

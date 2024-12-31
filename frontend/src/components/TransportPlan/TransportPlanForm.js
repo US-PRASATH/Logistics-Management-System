@@ -11,7 +11,7 @@ const TransportPlanForm = ({ selectedTransportPlan, onTransportPlanAdded, onTran
 
     const [error, setError] = useState('');
 
-    // Populate form fields if a transport plan is selected
+   
     useEffect(() => {
         if (selectedTransportPlan) {
             setTransportPlanData({
@@ -21,7 +21,7 @@ const TransportPlanForm = ({ selectedTransportPlan, onTransportPlanAdded, onTran
                 schedule: selectedTransportPlan.schedule || '',
             });
         } else {
-            // Reset the form if no transport plan is selected
+           
             setTransportPlanData({
                 route: '',
                 carrier: '',
@@ -66,7 +66,7 @@ const TransportPlanForm = ({ selectedTransportPlan, onTransportPlanAdded, onTran
                 onTransportPlanAdded();
             }
 
-            // Reset the form on successful submission
+           
             setTransportPlanData({
                 route: '',
                 carrier: '',

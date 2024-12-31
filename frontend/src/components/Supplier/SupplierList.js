@@ -24,19 +24,19 @@ const SupplierList = () => {
     const handleDelete = async (id) => {
         try {
             await deleteSupplier(id);
-            setSuppliers(suppliers.filter(supplier => supplier.id !== id)); // Remove the deleted supplier from the list
+            setSuppliers(suppliers.filter(supplier => supplier.id !== id)); 
         } catch (error) {
             console.error('Error deleting supplier:', error);
         }
     };
 
     const handleEdit = (supplier) => {
-        setSelectedSupplier(supplier); // Populate form with the selected supplier data
+        setSelectedSupplier(supplier); 
     };
 
     const handleSupplierUpdated = () => {
-        fetchSuppliers(); // Refresh the supplier list after updating
-        setSelectedSupplier(null); // Reset the selected supplier
+        fetchSuppliers(); 
+        setSelectedSupplier(null);
     };
 
     return (

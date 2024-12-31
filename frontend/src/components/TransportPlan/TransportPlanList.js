@@ -24,19 +24,19 @@ const TransportPlanList = () => {
     const handleDelete = async (id) => {
         try {
             await deleteTransportPlan(id);
-            setTransportPlans(transportPlans.filter(plan => plan.id !== id)); // Remove the deleted plan from the list
+            setTransportPlans(transportPlans.filter(plan => plan.id !== id)); 
         } catch (error) {
             console.error('Error deleting transport plan:', error);
         }
     };
 
     const handleEdit = (plan) => {
-        setSelectedTransportPlan(plan); // Populate form with the selected transport plan
+        setSelectedTransportPlan(plan); 
     };
 
     const handleTransportPlanUpdated = () => {
-        fetchTransportPlans(); // Refresh the transport plan list after updating
-        setSelectedTransportPlan(null); // Reset the selected plan
+        fetchTransportPlans(); 
+        setSelectedTransportPlan(null); 
     };
 
     return (

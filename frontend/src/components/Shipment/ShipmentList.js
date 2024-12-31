@@ -24,19 +24,19 @@ const ShipmentList = () => {
     const handleDelete = async (id) => {
         try {
             await deleteShipment(id);
-            setShipments(shipments.filter(shipment => shipment.id !== id));  // Remove the deleted shipment from the list
+            setShipments(shipments.filter(shipment => shipment.id !== id)); 
         } catch (error) {
             console.error('Error deleting shipment:', error);
         }
     };
 
     const handleEdit = (shipment) => {
-        setSelectedShipment(shipment);  // Populate form with the selected shipment
+        setSelectedShipment(shipment);  
     };
 
     const handleShipmentUpdated = () => {
-        fetchShipments();  // Refresh the shipment list after updating
-        setSelectedShipment(null);  // Reset the selected shipment
+        fetchShipments(); 
+        setSelectedShipment(null); 
     };
 
     return (
@@ -62,7 +62,11 @@ const ShipmentList = () => {
                             </tr>
                         </thead>
                         {loading ? (
-                <p>Loading...</p>
+                <tbody>
+                <tr>
+                    <td colSpan="6" className="px-6 py-4 text-center text-gray-600 mx-auto">Loading...</td>
+                </tr>
+            </tbody>
             ) : (<tbody>
                             {shipments.map((shipment) => (
                                 <tr key={shipment.id} className="border-t">

@@ -11,7 +11,7 @@ const SupplierForm = ({ onSupplierAdded, selectedSupplier, onSupplierUpdated }) 
 
     useEffect(() => {
         if (selectedSupplier) {
-            setSupplierData(selectedSupplier); // Populate form fields with selected supplier data
+            setSupplierData(selectedSupplier); 
         }
     }, [selectedSupplier]);
 
@@ -28,13 +28,13 @@ const SupplierForm = ({ onSupplierAdded, selectedSupplier, onSupplierUpdated }) 
         try {
             if (selectedSupplier) {
                 await updateSupplier(selectedSupplier.id, supplierData);
-                onSupplierUpdated(); // Refresh supplier list after update
+                onSupplierUpdated(); 
             } else {
                 await createSupplier(supplierData);
-                onSupplierAdded(); // Refresh the supplier list after adding
+                onSupplierAdded();
             }
 
-            // Reset the form after submission
+            
             setSupplierData({
                 name: '',
                 contactInfo: '',

@@ -12,7 +12,7 @@ const ShipmentForm = ({ onShipmentAdded, selectedShipment, onShipmentUpdated }) 
 
     useEffect(() => {
         if (selectedShipment) {
-            setShipmentData(selectedShipment); // Populate form fields with selected shipment data
+            setShipmentData(selectedShipment); 
         }
     }, [selectedShipment]);
 
@@ -29,13 +29,13 @@ const ShipmentForm = ({ onShipmentAdded, selectedShipment, onShipmentUpdated }) 
         try {
             if (selectedShipment) {
                 await updateShipment(selectedShipment.id, shipmentData);
-                onShipmentUpdated(); // Refresh shipment list after update
+                onShipmentUpdated();
             } else {
                 await createShipment(shipmentData);
-                onShipmentAdded(); // Refresh the shipment list after adding
+                onShipmentAdded();
             }
 
-            // Reset the form after submission
+            
             setShipmentData({
                 trackingNumber: '',
                 origin: '',

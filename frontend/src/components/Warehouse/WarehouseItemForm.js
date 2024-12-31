@@ -47,7 +47,7 @@ const WarehouseItemForm = ({ selectedItem, onItemAdded, onItemUpdated }) => {
                 onItemAdded();
             }
 
-            // Reset form on successful submission
+            
             setItemData({
                 itemName: '',
                 category: '',
