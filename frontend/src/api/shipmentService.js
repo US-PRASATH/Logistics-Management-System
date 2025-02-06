@@ -1,8 +1,9 @@
 // src/services/shipmentService.js
 import axios from 'axios';
 
-const API_URL = 'https://8080-fcdcccabffdbaeb319887339abbeebabcabone.premiumproject.examly.io/api/shipments'; // Replace with your actual backend URL
+// const API_URL = 'https://8080-fcdcccabffdbaeb319887339abbeebabcabone.premiumproject.examly.io/api/shipments'; // Replace with your actual backend URL
 
+const API_URL = 'http://localhost:8080/api/shipments'; // Replace with your actual backend URL
 export const getAllShipments = () => {
     return axios.get(API_URL);
 };

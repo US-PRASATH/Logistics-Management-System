@@ -1,13 +1,11 @@
 package com.example.demo.model;
-// import javax.persistence.Entity;
-// import javax.persistence.Id;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,17 +15,17 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "shipments")
-public class Shipment{
+@Table(name = "transporters")
+public class Transporter{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String trackingNumber;
-    private String origin;
-    private String destination;
-    private String estimatedDeliveryDate;
-
-    @OneToOne
-    @JoinColumn(name = "transport_plan_id")
-    private TransportPlan transportPlan;
+    private String name;
+    private String contactInfo;
+    @Enumerated(EnumType.STRING)
+    private TransporterType transporterType;
+    public enum TransporterType{
+        IN_HOUSE,
+        THIRD_PARTY
+    }
 }

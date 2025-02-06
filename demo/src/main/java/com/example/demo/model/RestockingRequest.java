@@ -1,14 +1,13 @@
 package com.example.demo.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,17 +17,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "warehouse_items")
-public class WarehouseItem{
+@Table(name = "restocking_request")
+public class RestockingRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String itemName;
-    private String category;
-    private Double quantity;
-    private String storageLocation;
-
-    @ManyToOne
+    
+    @OneToOne
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
 
@@ -36,17 +31,17 @@ public class WarehouseItem{
     @JoinColumn(name = "product_id")
     private Product product;
 
-    // Automatically set values before saving
-    @PrePersist
-    @PreUpdate
-    private void setDerivedFields() {
-        if (product != null) {
-            this.itemName = product.getName();
-            this.category = product.getCategory();
-        }
-        if (warehouse != null) {
-            this.storageLocation = warehouse.getLocation();
-        }
+    @OneToOne
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
+    private Integer quantity;
+    @Enumerated(EnumType.STRING)
+    private Status status;
+    public enum Status{
+        PENDING,
+        CONFIRMED,
+        SHIPPED,
+        DELIVERED
     }
 
 }

@@ -1,7 +1,9 @@
 // src/api/orderService.js
 import axios from 'axios';
 
-const API_URL = 'https://8080-fcdcccabffdbaeb319887339abbeebabcabone.premiumproject.examly.io/api/orders';
+// const API_URL = 'https://8080-fcdcccabffdbaeb319887339abbeebabcabone.premiumproject.examly.io/api/orders';
+
+const API_URL = 'http://localhost:8080/api/orders';
 
 export const getOrders = () => axios.get(API_URL);
 

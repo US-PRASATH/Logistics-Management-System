@@ -1,13 +1,11 @@
 package com.example.demo.model;
-// import javax.persistence.Entity;
-// import javax.persistence.Id;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,17 +15,16 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "shipments")
-public class Shipment{
+@Table(name = "products")
+public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String trackingNumber;
-    private String origin;
-    private String destination;
-    private String estimatedDeliveryDate;
+    private String name;
+    private String category;
+    private Double price;
 
-    @OneToOne
-    @JoinColumn(name = "transport_plan_id")
-    private TransportPlan transportPlan;
+    @ManyToOne
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
 }

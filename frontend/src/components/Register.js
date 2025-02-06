@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { UserContext } from './UserContext';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -8,7 +9,8 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    companyName: "",
+    // companyName: "",
+    role: "",
   });
 
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ const Register = () => {
     if (formData.password === formData.confirmPassword) {
       alert(`Registration successful`);
       setUser(formData);
+      axios.post("http://localhost:8080/user")
       navigate("/login");
     } else {
       alert("Passwords do not match");
@@ -87,7 +90,7 @@ const Register = () => {
             />
           </div>
 
-          <div>
+          {/* <div>
             <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Company Name</label>
             <input
               type="text"
@@ -97,7 +100,25 @@ const Register = () => {
               onChange={handleChange}
               value={formData.companyName}
             />
-          </div>
+          </div> */}
+
+<div>
+  <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
+  <select
+    name="role"
+    id="role"
+    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+    onChange={handleChange}
+    value={formData.role}
+  >
+    <option value="" disabled>Select a role</option>
+    <option value="ADMIN">Admin</option>
+    <option value="SUPPLIER">Supplier</option>
+    <option value="CUSTOMER">Customer</option>
+    <option value="TRANSPORTER">Transporter</option>
+  </select>
+</div>
+
 
           <div>
             <input
