@@ -1,0 +1,11 @@
+[33m1ef7db8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin-main/main[m[33m)[m HEAD@{0}: rebase (abort): returning to refs/heads/main
+[33m56b0317[m HEAD@{1}: commit: Made changes to frontend
+[33m1ef7db8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin-main/main[m[33m)[m HEAD@{2}: reset: moving to 1ef7db8
+[33ma425a52[m HEAD@{3}: pull --rebase origin-main main (start): checkout a425a522192c4c3304ef34bbd94b3f36c08236d1
+[33m1ef7db8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin-main/main[m[33m)[m HEAD@{4}: Branch: renamed refs/heads/Logistics_Management_DEC24_RHP-US-PRASATH to refs/heads/main
+[33m1ef7db8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin-main/main[m[33m)[m HEAD@{6}: commit: Implemented backend with Springboot, added Spring Security and JWT Authentication.
+[33mebefd0a[m[33m ([m[1;31morigin/Logistics_Management_DEC24_RHP-US-PRASATH[m[33m)[m HEAD@{7}: commit: Developed Services, Controllers and Models
+[33m368a85b[m HEAD@{8}: pull: Fast-forward
+[33m54ce3fd[m HEAD@{9}: commit: Added Styling using Tailwind CSS
+[33m4a620b0[m HEAD@{10}: checkout: moving from main to Logistics_Management_DEC24_RHP-US-PRASATH
+[33m482232c[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{11}: clone: from https://github.com/iamneo-production/99714d55-20a7-4e66-8afc-b5fb1e23848a-c4377016-2ec0-4060-91c8-eb889806d685.git
