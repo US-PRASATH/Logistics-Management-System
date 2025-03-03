@@ -2,36 +2,79 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/auth';
 
-const TransportPlanList = () => {
-  const [transportPlans, setTransportPlans] = useState([]);
+const ExpensesList = () => {
+  const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalExpenses, setTotalExpenses] = useState(0);
 
   useEffect(() => {
-    const fetchTransportPlans = async () => {
+    const fetchExpenses = async () => {
       try {
-        const response = await api.get('/api/transport-plans');
-        setTransportPlans(response.data);
+        const response = await api.get('/api/expenses');
+        setExpenses(response.data);
+        
+        // Calculate total expenses
+        const total = response.data.reduce((sum, expense) => sum + expense.amount, 0);
+        setTotalExpenses(total);
+        
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching transport plans:', err);
-        setError('Failed to load transport plans');
+        console.error('Error fetching expenses:', err);
+        setError('Failed to load expenses');
         setLoading(false);
       }
     };
 
-    fetchTransportPlans();
+    fetchExpenses();
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this transport plan?')) {
+    if (window.confirm('Are you sure you want to delete this expense?')) {
       try {
-        await api.delete(`/api/transport-plans/${id}`);
-        setTransportPlans(transportPlans.filter(plan => plan.id !== id));
+        await api.delete(`/api/expenses/${id}`);
+        
+        // Update expenses list
+        const updatedExpenses = expenses.filter(expense => expense.id !== id);
+        setExpenses(updatedExpenses);
+        
+        // Recalculate total
+        const total = updatedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+        setTotalExpenses(total);
       } catch (err) {
-        console.error('Error deleting transport plan:', err);
-        setError('Failed to delete transport plan');
+        console.error('Error deleting expense:', err);
+        setError('Failed to delete expense');
       }
+    }
+  };
+
+  const getExpenseTypeLabel = (type) => {
+    switch (type) {
+      case 'TRANSPORTATION':
+        return 'Transportation';
+      case 'WAREHOUSE':
+        return 'Warehouse';
+      case 'SUPPLIER_PAYMENT':
+        return 'Supplier Payment';
+      case 'MISCELLANEOUS':
+        return 'Miscellaneous';
+      default:
+        return type;
+    }
+  };
+
+  const getExpenseTypeBadgeClass = (type) => {
+    switch (type) {
+      case 'TRANSPORTATION':
+        return 'bg-blue-100 text-blue-800';
+      case 'WAREHOUSE':
+        return 'bg-green-100 text-green-800';
+      case 'SUPPLIER_PAYMENT':
+        return 'bg-purple-100 text-purple-800';
+      case 'MISCELLANEOUS':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -63,13 +106,21 @@ const TransportPlanList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Transport Plans</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Expenses</h1>
         <Link
-          to="/transport-plans/new"
+          to="/expenses/new"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Create New Transport Plan
+          Add New Expense
         </Link>
+      </div>
+
+      <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-2">Summary</h2>
+        <div className="flex items-center">
+          <div className="text-3xl font-bold text-gray-900">${totalExpenses.toFixed(2)}</div>
+          <div className="ml-2 text-sm text-gray-500">total expenses</div>
+        </div>
       </div>
 
       <div className="flex flex-col">
@@ -80,16 +131,16 @@ const TransportPlanList = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Order
+                      Date
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Origin / Destination
+                      Type
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Transporter
+                      Related To
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Schedule
+                      Amount
                     </th>
                     <th scope="col" className="relative px-6 py-3">
                       <span className="sr-only">Actions</span>
@@ -97,46 +148,41 @@ const TransportPlanList = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {transportPlans.length === 0 ? (
+                  {expenses.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
-                        No transport plans found
+                        No expenses found
                       </td>
                     </tr>
                   ) : (
-                    transportPlans.map((plan) => (
-                      <tr key={plan.id}>
+                    expenses.map((expense) => (
+                      <tr key={expense.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {new Date(expense.date).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getExpenseTypeBadgeClass(expense.expenseType)}`}>
+                            {getExpenseTypeLabel(expense.expenseType)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {expense.transporter?.name || expense.warehouse?.name || expense.supplier?.name || 'N/A'}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {plan.order ? `Order #${plan.order.id}` : 'N/A'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {plan.order?.customerName || 'N/A'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {plan.originLocation || 'N/A'} → {plan.destinationLocation || 'N/A'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{plan.transporter?.name || 'N/A'}</div>
-                          <div className="text-sm text-gray-500">{plan.carrier || 'N/A'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {plan.schedule ? new Date(plan.schedule).toLocaleDateString() : 'N/A'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {plan.schedule ? new Date(plan.schedule).toLocaleTimeString() : ''}
+                            ${expense.amount.toFixed(2)}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Link to={`/transport-plans/${plan.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                          <Link to={`/expenses/${expense.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
                             Edit
                           </Link>
                           <button
-                            onClick={() => handleDelete(plan.id)}
+                            onClick={() => handleDelete(expense.id)}
                             className="text-red-600 hover:text-red-900"
                           >
                             Delete
@@ -155,4 +201,4 @@ const TransportPlanList = () => {
   );
 };
 
-export default TransportPlanList;
+export default ExpensesList;

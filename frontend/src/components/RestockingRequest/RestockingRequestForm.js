@@ -2,33 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/auth';
 
-const TransportPlanForm = () => {
+const RestockingRequestForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [orders, setOrders] = useState([]);
-  const [transporters, setTransporters] = useState([]);
+  const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [formData, setFormData] = useState({
-    order: '',
-    transporter: '',
+    product: '',
     warehouse: '',
-    loadCapacity: '',
-    schedule: ''
+    quantity: '',
+    status: 'PENDING'
   });
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ordersRes, transportersRes, warehousesRes] = await Promise.all([
-          api.get('/api/orders'),
-          api.get('/api/transporters'),
+        const [productsRes, warehousesRes] = await Promise.all([
+          api.get('/api/products'),
           api.get('/api/warehouses')
         ]);
         
-        setOrders(ordersRes.data);
-        setTransporters(transportersRes.data);
+        setProducts(productsRes.data);
         setWarehouses(warehousesRes.data);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -36,32 +32,27 @@ const TransportPlanForm = () => {
       }
     };
 
-    const fetchTransportPlan = async () => {
+    const fetchRestockingRequest = async () => {
       if (id) {
         try {
-          const response = await api.get(`/api/transport-plans/${id}`);
-          const plan = response.data;
-          
-          // Format date for input
-          const scheduleDate = plan.schedule ? new Date(plan.schedule) : new Date();
-          const formattedDate = scheduleDate.toISOString().slice(0, 16);
+          const response = await api.get(`/api/restocking-requests/${id}`);
+          const request = response.data;
           
           setFormData({
-            order: plan.order?.id || '',
-            transporter: plan.transporter?.id || '',
-            warehouse: plan.warehouse?.id || '',
-            loadCapacity: plan.loadCapacity || '',
-            schedule: formattedDate
+            product: request.product?.id || '',
+            warehouse: request.warehouse?.id || '',
+            quantity: request.quantity || '',
+            status: request.status || 'PENDING'
           });
         } catch (err) {
-          console.error('Error fetching transport plan:', err);
-          setError('Failed to load transport plan');
+          console.error('Error fetching restocking request:', err);
+          setError('Failed to load restocking request');
         }
       }
     };
 
     fetchData();
-    fetchTransportPlan();
+    fetchRestockingRequest();
   }, [id]);
 
   const handleChange = (e) => {
@@ -78,24 +69,23 @@ const TransportPlanForm = () => {
     setError(null);
 
     try {
-      const transportPlanData = {
-        order: { id: formData.order },
-        transporter: { id: formData.transporter },
+      const requestData = {
+        product: { id: formData.product },
         warehouse: { id: formData.warehouse },
-        loadCapacity: parseFloat(formData.loadCapacity),
-        schedule: formData.schedule
+        quantity: parseInt(formData.quantity),
+        status: formData.status
       };
 
       if (id) {
-        await api.put(`/api/transport-plans/${id}`, transportPlanData);
+        await api.put(`/api/restocking-requests/${id}`, requestData);
       } else {
-        await api.post('/api/transport-plans', transportPlanData);
+        await api.post('/api/restocking-requests', requestData);
       }
 
-      navigate('/transport-plans');
+      navigate('/restocking-requests');
     } catch (err) {
-      console.error('Error saving transport plan:', err);
-      setError('Failed to save transport plan. Please check your input and try again.');
+      console.error('Error saving restocking request:', err);
+      setError('Failed to save restocking request. Please check your input and try again.');
     } finally {
       setLoading(false);
     }
@@ -106,7 +96,7 @@ const TransportPlanForm = () => {
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-            {id ? 'Edit Transport Plan' : 'Create New Transport Plan'}
+            {id ? 'Edit Restocking Request' : 'Create New Restocking Request'}
           </h2>
         </div>
       </div>
@@ -128,42 +118,21 @@ const TransportPlanForm = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         <div>
-          <label htmlFor="order" className="block text-sm font-medium text-gray-700">
-            Order
+          <label htmlFor="product" className="block text-sm font-medium text-gray-700">
+            Product
           </label>
           <select
-            id="order"
-            name="order"
-            value={formData.order}
+            id="product"
+            name="product"
+            value={formData.product}
             onChange={handleChange}
             required
             className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           >
-            <option value="">Select an order</option>
-            {orders.map((order) => (
-              <option key={order.id} value={order.id}>
-                Order #{order.id} - {order.customerName} ({order.product?.name})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="transporter" className="block text-sm font-medium text-gray-700">
-            Transporter
-          </label>
-          <select
-            id="transporter"
-            name="transporter"
-            value={formData.transporter}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          >
-            <option value="">Select a transporter</option>
-            {transporters.map((transporter) => (
-              <option key={transporter.id} value={transporter.id}>
-                {transporter.name} ({transporter.transporterType})
+            <option value="">Select a product</option>
+            {products.map((product) => (
+              <option key={product.id} value={product.id}>
+                {product.name} - ${product.price}
               </option>
             ))}
           </select>
@@ -191,41 +160,45 @@ const TransportPlanForm = () => {
         </div>
 
         <div>
-          <label htmlFor="loadCapacity" className="block text-sm font-medium text-gray-700">
-            Load Capacity
+          <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+            Quantity
           </label>
           <input
             type="number"
-            name="loadCapacity"
-            id="loadCapacity"
-            min="0"
-            step="0.01"
-            value={formData.loadCapacity}
+            name="quantity"
+            id="quantity"
+            min="1"
+            value={formData.quantity}
             onChange={handleChange}
             required
             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
         </div>
 
-        <div>
-          <label htmlFor="schedule" className="block text-sm font-medium text-gray-700">
-            Schedule Date
-          </label>
-          <input
-            type="datetime-local"
-            name="schedule"
-            id="schedule"
-            value={formData.schedule}
-            onChange={handleChange}
-            required
-            className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
+        {id && (
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+              Status
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="PENDING">Pending</option>
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="SHIPPED">Shipped</option>
+              <option value="DELIVERED">Delivered</option>
+            </select>
+          </div>
+        )}
 
         <div className="flex justify-end space-x-3">
           <button
             type="button"
-            onClick={() => navigate('/transport-plans')}
+            onClick={() => navigate('/restocking-requests')}
             className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Cancel
@@ -243,4 +216,4 @@ const TransportPlanForm = () => {
   );
 };
 
-export default TransportPlanForm;
+export default RestockingRequestForm;

@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import api from '../services/api';
 import api from '../api/auth';
 
 export const AuthContext = createContext();
@@ -16,7 +15,6 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           // Set the token in axios headers
-          console.log(token);
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           
           // You could add a user profile endpoint to fetch user data
@@ -39,10 +37,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await api.post('/api/auth/login', credentials);
-      const { data } = response;
+      const data = response.data;
       
       // Store the token
-      console.log(data);
       localStorage.setItem('token', data);
       setToken(data);
       
@@ -57,7 +54,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Login error:', error);
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Invalid credentials' 
+        message: error.response?.data || 'Invalid credentials' 
       };
     }
   };
@@ -70,7 +67,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Registration error:', error);
       return { 
         success: false, 
-        message: error.response?.data?.message || 'Registration failed' 
+        message: error.response?.data || 'Registration failed' 
       };
     }
   };

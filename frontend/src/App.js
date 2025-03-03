@@ -17,8 +17,13 @@ import WarehouseList from './components/Warehouse/WarehouseItemList';
 import WarehouseForm from './components/Warehouse/WarehouseItemForm';
 import ShipmentList from './components/Shipment/ShipmentList';
 import ShipmentDetails from './components/Shipment/ShipmentForm';
-// import TransportPlanList from './components/transport-plans/TransportPlanList';
-// import TransportPlanForm from './components/transport-plans/TransportPlanForm';
+import TransportPlanList from './components/TransportPlan/TransportPlanList';
+import TransportPlanForm from './components/TransportPlan/TransportPlanForm';
+import RestockingRequestList from './components/RestockingRequest/RestockingRequestList';
+import RestockingRequestForm from './components/RestockingRequest/RestockingRequestForm';
+import ExpensesList from './components/Expenses/ExpensesList';
+import ExpensesForm from './components/Expenses/ExpensesForm';
+import RevenueReport from './components/Revenue/RevenueReport';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import { AuthProvider } from './components/context/AuthContext';
 
@@ -129,7 +134,7 @@ function App() {
               </ProtectedRoute>
             } />
             
-            {/* <Route path="/transport-plans" element={
+            <Route path="/transport-plans" element={
               <ProtectedRoute>
                 <TransportPlanList />
               </ProtectedRoute>
@@ -143,7 +148,45 @@ function App() {
               <ProtectedRoute>
                 <TransportPlanForm />
               </ProtectedRoute>
-            } /> */}
+            } />
+
+            <Route path="/restocking-requests" element={
+              <ProtectedRoute>
+                <RestockingRequestList />
+              </ProtectedRoute>
+            } />
+            <Route path="/restocking-requests/new" element={
+              <ProtectedRoute>
+                <RestockingRequestForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/restocking-requests/:id" element={
+              <ProtectedRoute>
+                <RestockingRequestForm />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/expenses" element={
+              <ProtectedRoute>
+                <ExpensesList />
+              </ProtectedRoute>
+            } />
+            <Route path="/expenses/new" element={
+              <ProtectedRoute>
+                <ExpensesForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/expenses/:id" element={
+              <ProtectedRoute>
+                <ExpensesForm />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/revenue" element={
+              <ProtectedRoute>
+                <RevenueReport />
+              </ProtectedRoute>
+            } />
           </Routes>
         </div>
       </div>
