@@ -1,103 +1,154 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import './App.css';
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import Dashboard from './components/Dashboard';
+import Navbar from './components/Navbar';
 import OrderList from './components/Order/OrderList';
-import ShipmentList from './components/Shipment/ShipmentList';
+import OrderForm from './components/Order/OrderForm';
+import ProductList from './components/Product/ProductList';
+import ProductForm from './components/Product/ProductForm';
 import SupplierList from './components/Supplier/SupplierList';
-import TransportPlanList from './components/TransportPlan/TransportPlanList';
-import WarehouseItemList from './components/Warehouse/WarehouseItemList';
-import Register from './components/Register';
-import Login from './components/Login';
-import { UserProvider } from './components/UserContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import SupplierForm from './components/Supplier/SupplierForm';
+import TransporterList from './components/Transporter/TransporterList';
+import TransporterForm from './components/Transporter/TransporterForm';
+import WarehouseList from './components/Warehouse/WarehouseItemList';
+import WarehouseForm from './components/Warehouse/WarehouseItemForm';
+import ShipmentList from './components/Shipment/ShipmentList';
+import ShipmentDetails from './components/Shipment/ShipmentForm';
+// import TransportPlanList from './components/transport-plans/TransportPlanList';
+// import TransportPlanForm from './components/transport-plans/TransportPlanForm';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
+import { AuthProvider } from './components/context/AuthContext';
 
-const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const navigate = useNavigate();
-
-  // useEffect(() => {
-   
-  //   if (!isLoggedIn && window.location.pathname === "/") {
-  //     navigate("/login");
-  //   }
-  // }, [isLoggedIn]);
-
+function App() {
   return (
-    <UserProvider>
-      <div className="App">
-      <header className="bg-blue-800 text-white py-4 shadow-lg">
-          <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-3xl font-semibold">Logistics Management System</h1>
+    <AuthProvider>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             
-            {isLoggedIn && (
-              <div className="flex items-center space-x-4">
-                <nav className="flex space-x-6">
-                  <Link to="/orders" className="hover:bg-blue-700 px-4 py-2 rounded-md">Orders</Link>
-                  <Link to="/shipments" className="hover:bg-blue-700 px-4 py-2 rounded-md">Shipments</Link>
-                  <Link to="/suppliers" className="hover:bg-blue-700 px-4 py-2 rounded-md">Suppliers</Link>
-                  <Link to="/transport-plans" className="hover:bg-blue-700 px-4 py-2 rounded-md">Transport Plans</Link>
-                  <Link to="/warehouse-items" className="hover:bg-blue-700 px-4 py-2 rounded-md">Warehouse Items</Link>
-                </nav>
-                
-                <button 
-                  onClick={() => { setIsLoggedIn(false); navigate('/login'); }}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        </header>
-        <Routes>
-          
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-
-          
-          <Route
-            path="/orders"
-            element={
-              <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/orders" element={
+              <ProtectedRoute>
                 <OrderList />
               </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/shipments"
-            element={
-              <ProtectedRoute isLoggedIn={isLoggedIn}>
-                <ShipmentList />
+            } />
+            <Route path="/orders/new" element={
+              <ProtectedRoute>
+                <OrderForm />
               </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/suppliers"
-            element={
-              <ProtectedRoute isLoggedIn={isLoggedIn}>
+            } />
+            <Route path="/orders/:id" element={
+              <ProtectedRoute>
+                <OrderForm />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/products" element={
+              <ProtectedRoute>
+                <ProductList />
+              </ProtectedRoute>
+            } />
+            <Route path="/products/new" element={
+              <ProtectedRoute>
+                <ProductForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/products/:id" element={
+              <ProtectedRoute>
+                <ProductForm />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/suppliers" element={
+              <ProtectedRoute>
                 <SupplierList />
               </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/transport-plans"
-            element={
-              <ProtectedRoute isLoggedIn={isLoggedIn}>
+            } />
+            <Route path="/suppliers/new" element={
+              <ProtectedRoute>
+                <SupplierForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/suppliers/:id" element={
+              <ProtectedRoute>
+                <SupplierForm />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/transporters" element={
+              <ProtectedRoute>
+                <TransporterList />
+              </ProtectedRoute>
+            } />
+            <Route path="/transporters/new" element={
+              <ProtectedRoute>
+                <TransporterForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/transporters/:id" element={
+              <ProtectedRoute>
+                <TransporterForm />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/warehouses" element={
+              <ProtectedRoute>
+                <WarehouseList />
+              </ProtectedRoute>
+            } />
+            <Route path="/warehouses/new" element={
+              <ProtectedRoute>
+                <WarehouseForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/warehouses/:id" element={
+              <ProtectedRoute>
+                <WarehouseForm />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/shipments" element={
+              <ProtectedRoute>
+                <ShipmentList />
+              </ProtectedRoute>
+            } />
+            <Route path="/shipments/:id" element={
+              <ProtectedRoute>
+                <ShipmentDetails />
+              </ProtectedRoute>
+            } />
+            
+            {/* <Route path="/transport-plans" element={
+              <ProtectedRoute>
                 <TransportPlanList />
               </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/warehouse-items"
-            element={
-              <ProtectedRoute isLoggedIn={isLoggedIn}>
-                <WarehouseItemList />
+            } />
+            <Route path="/transport-plans/new" element={
+              <ProtectedRoute>
+                <TransportPlanForm />
               </ProtectedRoute>
-            }
-          />
-        </Routes>
+            } />
+            <Route path="/transport-plans/:id" element={
+              <ProtectedRoute>
+                <TransportPlanForm />
+              </ProtectedRoute>
+            } /> */}
+          </Routes>
+        </div>
       </div>
-    </UserProvider>
+    </AuthProvider>
   );
-};
+}
 
 export default App;

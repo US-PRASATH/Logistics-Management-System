@@ -3,36 +3,36 @@ import { useParams, useNavigate } from 'react-router-dom';
 // import api from '../../services/api';
 import api from '../api/auth';
 
-const WarehouseForm = () => {
+const TransporterForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    location: '',
-    capacity: ''
+    contactInfo: '',
+    transporterType: 'IN_HOUSE'
   });
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchWarehouse = async () => {
+    const fetchTransporter = async () => {
       if (id) {
         try {
-          const response = await api.get(`/api/warehouses/${id}`);
-          const warehouse = response.data;
+          const response = await api.get(`/api/transporters/${id}`);
+          const transporter = response.data;
           setFormData({
-            name: warehouse.name || '',
-            location: warehouse.location || '',
-            capacity: warehouse.capacity || ''
+            name: transporter.name || '',
+            contactInfo: transporter.contactInfo || '',
+            transporterType: transporter.transporterType || 'IN_HOUSE'
           });
         } catch (err) {
-          console.error('Error fetching warehouse:', err);
-          setError('Failed to load warehouse');
+          console.error('Error fetching transporter:', err);
+          setError('Failed to load transporter');
         }
       }
     };
 
-    fetchWarehouse();
+    fetchTransporter();
   }, [id]);
 
   const handleChange = (e) => {
@@ -49,21 +49,16 @@ const WarehouseForm = () => {
     setError(null);
 
     try {
-      const warehouseData = {
-        ...formData,
-        capacity: parseInt(formData.capacity)
-      };
-
       if (id) {
-        await api.put(`/api/warehouses/${id}`, warehouseData);
+        await api.put(`/api/transporters/${id}`, formData);
       } else {
-        await api.post('/api/warehouses', warehouseData);
+        await api.post('/api/transporters', formData);
       }
 
-      navigate('/warehouses');
+      navigate('/transporters');
     } catch (err) {
-      console.error('Error saving warehouse:', err);
-      setError('Failed to save warehouse. Please check your input and try again.');
+      console.error('Error saving transporter:', err);
+      setError('Failed to save transporter. Please check your input and try again.');
     } finally {
       setLoading(false);
     }
@@ -74,7 +69,7 @@ const WarehouseForm = () => {
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-            {id ? 'Edit Warehouse' : 'Add New Warehouse'}
+            {id ? 'Edit Transporter' : 'Add New Transporter'}
           </h2>
         </div>
       </div>
@@ -97,7 +92,7 @@ const WarehouseForm = () => {
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Warehouse Name
+            Transporter Name
           </label>
           <input
             type="text"
@@ -111,14 +106,14 @@ const WarehouseForm = () => {
         </div>
 
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-            Location
+          <label htmlFor="contactInfo" className="block text-sm font-medium text-gray-700">
+            Contact Information
           </label>
           <input
             type="text"
-            name="location"
-            id="location"
-            value={formData.location}
+            name="contactInfo"
+            id="contactInfo"
+            value={formData.contactInfo}
             onChange={handleChange}
             required
             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -126,26 +121,25 @@ const WarehouseForm = () => {
         </div>
 
         <div>
-          <label htmlFor="capacity" className="block text-sm font-medium text-gray-700">
-            Capacity
+          <label htmlFor="transporterType" className="block text-sm font-medium text-gray-700">
+            Transporter Type
           </label>
-          <input
-            type="number"
-            name="capacity"
-            id="capacity"
-            min="1"
-            value={formData.capacity}
+          <select
+            id="transporterType"
+            name="transporterType"
+            value={formData.transporterType}
             onChange={handleChange}
-            required
-            className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-          <p className="mt-1 text-sm text-gray-500">Maximum storage capacity in units</p>
+            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="IN_HOUSE">In-House</option>
+            <option value="THIRD_PARTY">Third Party</option>
+          </select>
         </div>
 
         <div className="flex justify-end space-x-3">
           <button
             type="button"
-            onClick={() => navigate('/warehouses')}
+            onClick={() => navigate('/transporters')}
             className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Cancel
@@ -163,4 +157,4 @@ const WarehouseForm = () => {
   );
 };
 
-export default WarehouseForm;
+export default TransporterForm;

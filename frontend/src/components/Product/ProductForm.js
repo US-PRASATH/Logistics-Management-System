@@ -3,36 +3,50 @@ import { useParams, useNavigate } from 'react-router-dom';
 // import api from '../../services/api';
 import api from '../api/auth';
 
-const WarehouseForm = () => {
+const ProductForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [suppliers, setSuppliers] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
-    location: '',
-    capacity: ''
+    category: '',
+    price: '',
+    supplier: ''
   });
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchWarehouse = async () => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await api.get('/api/suppliers');
+        setSuppliers(response.data);
+      } catch (err) {
+        console.error('Error fetching suppliers:', err);
+        setError('Failed to load suppliers');
+      }
+    };
+
+    const fetchProduct = async () => {
       if (id) {
         try {
-          const response = await api.get(`/api/warehouses/${id}`);
-          const warehouse = response.data;
+          const response = await api.get(`/api/products/${id}`);
+          const product = response.data;
           setFormData({
-            name: warehouse.name || '',
-            location: warehouse.location || '',
-            capacity: warehouse.capacity || ''
+            name: product.name || '',
+            category: product.category || '',
+            price: product.price || '',
+            supplier: product.supplier?.id || ''
           });
         } catch (err) {
-          console.error('Error fetching warehouse:', err);
-          setError('Failed to load warehouse');
+          console.error('Error fetching product:', err);
+          setError('Failed to load product');
         }
       }
     };
 
-    fetchWarehouse();
+    fetchSuppliers();
+    fetchProduct();
   }, [id]);
 
   const handleChange = (e) => {
@@ -49,21 +63,23 @@ const WarehouseForm = () => {
     setError(null);
 
     try {
-      const warehouseData = {
-        ...formData,
-        capacity: parseInt(formData.capacity)
+      const productData = {
+        name: formData.name,
+        category: formData.category,
+        price: parseFloat(formData.price),
+        supplier: formData.supplier ? { id: formData.supplier } : null
       };
 
       if (id) {
-        await api.put(`/api/warehouses/${id}`, warehouseData);
+        await api.put(`/api/products/${id}`, productData);
       } else {
-        await api.post('/api/warehouses', warehouseData);
+        await api.post('/api/products', productData);
       }
 
-      navigate('/warehouses');
+      navigate('/products');
     } catch (err) {
-      console.error('Error saving warehouse:', err);
-      setError('Failed to save warehouse. Please check your input and try again.');
+      console.error('Error saving product:', err);
+      setError('Failed to save product. Please check your input and try again.');
     } finally {
       setLoading(false);
     }
@@ -74,7 +90,7 @@ const WarehouseForm = () => {
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-            {id ? 'Edit Warehouse' : 'Add New Warehouse'}
+            {id ? 'Edit Product' : 'Add New Product'}
           </h2>
         </div>
       </div>
@@ -97,7 +113,7 @@ const WarehouseForm = () => {
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Warehouse Name
+            Product Name
           </label>
           <input
             type="text"
@@ -111,14 +127,14 @@ const WarehouseForm = () => {
         </div>
 
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-            Location
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+            Category
           </label>
           <input
             type="text"
-            name="location"
-            id="location"
-            value={formData.location}
+            name="category"
+            id="category"
+            value={formData.category}
             onChange={handleChange}
             required
             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -126,26 +142,52 @@ const WarehouseForm = () => {
         </div>
 
         <div>
-          <label htmlFor="capacity" className="block text-sm font-medium text-gray-700">
-            Capacity
+          <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+            Price
           </label>
-          <input
-            type="number"
-            name="capacity"
-            id="capacity"
-            min="1"
-            value={formData.capacity}
+          <div className="mt-1 relative rounded-md shadow-sm">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="text-gray-500 sm:text-sm">$</span>
+            </div>
+            <input
+              type="number"
+              name="price"
+              id="price"
+              min="0"
+              step="0.01"
+              value={formData.price}
+              onChange={handleChange}
+              required
+              className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="supplier" className="block text-sm font-medium text-gray-700">
+            Supplier
+          </label>
+          <select
+            id="supplier"
+            name="supplier"
+            value={formData.supplier}
             onChange={handleChange}
-            required
-            className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-          <p className="mt-1 text-sm text-gray-500">Maximum storage capacity in units</p>
+            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="">Select a supplier</option>
+            {suppliers.map((supplier) => (
+              <option key={supplier.id} value={supplier.id}>
+                {supplier.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="flex justify-end space-x-3">
           <button
             type="button"
-            onClick={() => navigate('/warehouses')}
+            onClick={() => navigate('/products')}
             className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Cancel
@@ -163,4 +205,4 @@ const WarehouseForm = () => {
   );
 };
 
-export default WarehouseForm;
+export default ProductForm;

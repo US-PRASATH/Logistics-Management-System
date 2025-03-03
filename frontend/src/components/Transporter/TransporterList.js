@@ -3,36 +3,47 @@ import { Link } from 'react-router-dom';
 // import api from '../../services/api';
 import api from '../api/auth';
 
-const SupplierList = () => {
-  const [suppliers, setSuppliers] = useState([]);
+const TransporterList = () => {
+  const [transporters, setTransporters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchSuppliers = async () => {
+    const fetchTransporters = async () => {
       try {
-        const response = await api.get('/api/suppliers');
-        setSuppliers(response.data);
+        const response = await api.get('/api/transporters');
+        setTransporters(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching suppliers:', err);
-        setError('Failed to load suppliers');
+        console.error('Error fetching transporters:', err);
+        setError('Failed to load transporters');
         setLoading(false);
       }
     };
 
-    fetchSuppliers();
+    fetchTransporters();
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this supplier?')) {
+    if (window.confirm('Are you sure you want to delete this transporter?')) {
       try {
-        await api.delete(`/api/suppliers/${id}`);
-        setSuppliers(suppliers.filter(supplier => supplier.id !== id));
+        await api.delete(`/api/transporters/${id}`);
+        setTransporters(transporters.filter(transporter => transporter.id !== id));
       } catch (err) {
-        console.error('Error deleting supplier:', err);
-        setError('Failed to delete supplier');
+        console.error('Error deleting transporter:', err);
+        setError('Failed to delete transporter');
       }
+    }
+  };
+
+  const getTransporterTypeBadge = (type) => {
+    switch (type) {
+      case 'IN_HOUSE':
+        return 'bg-green-100 text-green-800';
+      case 'THIRD_PARTY':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -64,12 +75,12 @@ const SupplierList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Suppliers</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Transporters</h1>
         <Link
-          to="/suppliers/new"
+          to="/transporters/new"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Add New Supplier
+          Add New Transporter
         </Link>
       </div>
 
@@ -87,10 +98,7 @@ const SupplierList = () => {
                       Contact Info
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Address
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Performance Rating
+                      Type
                     </th>
                     <th scope="col" className="relative px-6 py-3">
                       <span className="sr-only">Actions</span>
@@ -98,33 +106,32 @@ const SupplierList = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {suppliers.length === 0 ? (
+                  {transporters.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
-                        No suppliers found
+                      <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                        No transporters found
                       </td>
                     </tr>
                   ) : (
-                    suppliers.map((supplier) => (
-                      <tr key={supplier.id}>
+                    transporters.map((transporter) => (
+                      <tr key={transporter.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{supplier.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{transporter.name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{supplier.contactInfo}</div>
+                          <div className="text-sm text-gray-500">{transporter.contactInfo}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{supplier.address}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{supplier.performanceRating}</div>
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTransporterTypeBadge(transporter.transporterType)}`}>
+                            {transporter.transporterType?.replace('_', ' ')}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Link to={`/suppliers/${supplier.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                          <Link to={`/transporters/${transporter.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
                             Edit
                           </Link>
                           <button
-                            onClick={() => handleDelete(supplier.id)}
+                            onClick={() => handleDelete(transporter.id)}
                             className="text-red-600 hover:text-red-900"
                           >
                             Delete
@@ -143,4 +150,4 @@ const SupplierList = () => {
   );
 };
 
-export default SupplierList;
+export default TransporterList;

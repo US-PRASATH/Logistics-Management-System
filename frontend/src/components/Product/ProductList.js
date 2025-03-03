@@ -3,35 +3,35 @@ import { Link } from 'react-router-dom';
 // import api from '../../services/api';
 import api from '../api/auth';
 
-const SupplierList = () => {
-  const [suppliers, setSuppliers] = useState([]);
+const ProductList = () => {
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchSuppliers = async () => {
+    const fetchProducts = async () => {
       try {
-        const response = await api.get('/api/suppliers');
-        setSuppliers(response.data);
+        const response = await api.get('/api/products');
+        setProducts(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching suppliers:', err);
-        setError('Failed to load suppliers');
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
         setLoading(false);
       }
     };
 
-    fetchSuppliers();
+    fetchProducts();
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this supplier?')) {
+    if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await api.delete(`/api/suppliers/${id}`);
-        setSuppliers(suppliers.filter(supplier => supplier.id !== id));
+        await api.delete(`/api/products/${id}`);
+        setProducts(products.filter(product => product.id !== id));
       } catch (err) {
-        console.error('Error deleting supplier:', err);
-        setError('Failed to delete supplier');
+        console.error('Error deleting product:', err);
+        setError('Failed to delete product');
       }
     }
   };
@@ -64,12 +64,12 @@ const SupplierList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Suppliers</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Products</h1>
         <Link
-          to="/suppliers/new"
+          to="/products/new"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Add New Supplier
+          Add New Product
         </Link>
       </div>
 
@@ -84,13 +84,13 @@ const SupplierList = () => {
                       Name
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contact Info
+                      Category
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Address
+                      Price
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Performance Rating
+                      Supplier
                     </th>
                     <th scope="col" className="relative px-6 py-3">
                       <span className="sr-only">Actions</span>
@@ -98,33 +98,33 @@ const SupplierList = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {suppliers.length === 0 ? (
+                  {products.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
-                        No suppliers found
+                        No products found
                       </td>
                     </tr>
                   ) : (
-                    suppliers.map((supplier) => (
-                      <tr key={supplier.id}>
+                    products.map((product) => (
+                      <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{supplier.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{supplier.contactInfo}</div>
+                          <div className="text-sm text-gray-500">{product.category}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{supplier.address}</div>
+                          <div className="text-sm text-gray-900">${product.price?.toFixed(2)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{supplier.performanceRating}</div>
+                          <div className="text-sm text-gray-500">{product.supplier?.name || 'N/A'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Link to={`/suppliers/${supplier.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                          <Link to={`/products/${product.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
                             Edit
                           </Link>
                           <button
-                            onClick={() => handleDelete(supplier.id)}
+                            onClick={() => handleDelete(product.id)}
                             className="text-red-600 hover:text-red-900"
                           >
                             Delete
@@ -143,4 +143,4 @@ const SupplierList = () => {
   );
 };
 
-export default SupplierList;
+export default ProductList;
