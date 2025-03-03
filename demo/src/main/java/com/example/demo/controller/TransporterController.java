@@ -14,43 +14,43 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.model.Order;
-import com.example.demo.service.OrderService;
+import com.example.demo.model.Transporter;
+import com.example.demo.service.TransporterService;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/orders")
-public class OrderController {
-    private final OrderService service;
+@RequestMapping("/api/transporters")
+public class TransporterController {
+    private final TransporterService service;
 
     @Autowired
-    public OrderController(OrderService service) {
+    public TransporterController(TransporterService service) {
         this.service = service;
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getOrders() {
-        return ResponseEntity.ok(service.getAllOrders());
+    public ResponseEntity<List<Transporter>> getTransporters() {
+        return ResponseEntity.ok(service.getAllTransporters());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getOrderById(id));
+    public ResponseEntity<Transporter> getTransporterById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getTransporterById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order data) {
-        return ResponseEntity.ok(service.createOrder(data));
+    public ResponseEntity<Transporter> createTransporter(@RequestBody Transporter data) {
+        return ResponseEntity.ok(service.createTransporter(data));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody Order data) {
-        return ResponseEntity.ok(service.updateOrder(id, data));
+    public ResponseEntity<Transporter> updateTransporter(@PathVariable Long id, @RequestBody Transporter data) {
+        return ResponseEntity.ok(service.updateTransporter(id, data));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        service.deleteOrder(id);
+    public ResponseEntity<Void> deleteTransporter(@PathVariable Long id) {
+        service.deleteTransporter(id);
         return ResponseEntity.noContent().build();
     }
 }

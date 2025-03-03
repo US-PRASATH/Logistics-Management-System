@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,47 +12,45 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.WarehouseItem;
 import com.example.demo.service.WarehouseService;
 
-
-
-
-
 @RestController
 @CrossOrigin
-class WarehouseController{
+@RequestMapping("/api/warehouse-items")
+public class WarehouseController {
+
     @Autowired
-    WarehouseService service;
-    // @GetMapping("/")
-    // public String getHello() {
-    //     return new String("Hello world");
-    // }
-    
-    @GetMapping("/api/warehouse-items")
-    public List<WarehouseItem> getWarehouseItems() {
-        return service.getAllWarehouseItems();
+    private WarehouseService warehouseService;
+
+    @GetMapping
+    public ResponseEntity<List<WarehouseItem>> getAllWarehouseItems() {
+        return ResponseEntity.ok(warehouseService.getAllWarehouseItems());
     }
 
-    @PostMapping("/api/warehouse-items")
-    public void createWarehouseItem(@RequestBody WarehouseItem data) {
-        //TODO: process POST request
-        service.createWarehouseItem(data);
-        //return entity;
+    @GetMapping("/{id}")
+    public ResponseEntity<WarehouseItem> getWarehouseItemById(@PathVariable Long id) {
+        return ResponseEntity.ok(warehouseService.getWarehouseItemById(id));
     }
 
-    @PutMapping("/api/warehouse-items/{id}")
-    public void updateWarehouseItem(@PathVariable Long id, @RequestBody WarehouseItem data) {
-        //TODO: process PUT request
-        service.updateWarehouseItem(id, data);
-        // return entity;
+    @PostMapping
+    public ResponseEntity<Void> createWarehouseItem(@RequestBody WarehouseItem warehouseItem) {
+        warehouseService.createWarehouseItem(warehouseItem);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @DeleteMapping("/api/warehouse-items/{id}")
-    public void deleteWarehouseItem(@PathVariable Long id){
-        service.deleteWarehouseItem(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateWarehouseItem(@PathVariable Long id, @RequestBody WarehouseItem warehouseItem) {
+        warehouseService.updateWarehouseItem(id, warehouseItem);
+        return ResponseEntity.ok().build();
     }
-    
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteWarehouseItem(@PathVariable Long id) {
+        warehouseService.deleteWarehouseItem(id);
+        return ResponseEntity.noContent().build();
+    }
 }

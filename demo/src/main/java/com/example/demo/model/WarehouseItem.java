@@ -6,7 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -25,14 +24,14 @@ public class WarehouseItem{
     private Long id;
     private String itemName;
     private String category;
-    private Double quantity;
+    private Integer quantity;
     private String storageLocation;
 
     @ManyToOne
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 

@@ -1,49 +1,45 @@
 package com.example.demo.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Warehouse;
-import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.WarehouseRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
-public class WarehouseManagementService{
-    @Autowired
-    WarehouseRepository repo;
+public class WarehouseManagementService {
 
     @Autowired
-    ProductRepository productRepo;
+    private WarehouseRepository warehouseRepo;
 
-
-    public List<Warehouse> getAllWarehouses(){
-        return repo.findAll();
+    public List<Warehouse> getAllWarehouses() {
+        return warehouseRepo.findAll();
     }
 
-    public Warehouse getWarehouseById(Long id){
-        Optional<Warehouse> optionalWarehouse = repo.findById(id);
-        return optionalWarehouse.orElse(null); // Return the order if present, otherwise return null
+    public Warehouse getWarehouseById(Long id) {
+        return warehouseRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + id));
     }
 
-    public void createWarehouse(Warehouse order){
-        // if (order.getProduct().getId() != null) {
-        //     Optional<Product> optionalProduct = productRepo.findById(order.getProduct().getId());
-        //     if(optionalProduct.isPresent()){
-        //         Product existingProduct = optionalProduct.get();
-        //         order.setProduct(existingProduct);
-        //     }
-        // }
-        repo.save(order);
+    @Transactional
+    public void createWarehouse(Warehouse warehouse) {
+        // Validate the warehouse data
+        if (warehouse.getName() == null || warehouse.getLocation() == null || warehouse.getCapacity() == null) {
+            throw new IllegalArgumentException("Name, location, and capacity are mandatory");
+        }
+        warehouseRepo.save(warehouse);
     }
 
-    public void updateWarehouse(Long id, Warehouse data){
-        Optional<Warehouse> optionalWarehouse = repo.findById(id);
-    if (optionalWarehouse.isPresent()) {
-        Warehouse existingWarehouse = optionalWarehouse.get();
-        // Update fields of the existing order with the new order data
+    @Transactional
+    public void updateWarehouse(Long id, Warehouse data) {
+        Warehouse existingWarehouse = warehouseRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + id));
+
+        // Update fields if provided
         if (data.getName() != null) {
             existingWarehouse.setName(data.getName());
         }
@@ -53,28 +49,15 @@ public class WarehouseManagementService{
         if (data.getCapacity() != null) {
             existingWarehouse.setCapacity(data.getCapacity());
         }
-        // if (data.getStatus() != null) {
-        //     existingWarehouse.setStatus(data.getStatus());
-        // }
-        // if (data.getProduct().getId() != null) {
-        //     Optional<Product> optionalProduct = productRepo.findById(data.getProduct().getId());
-        //     if(optionalProduct.isPresent()){
-        //         Product existingProduct = optionalProduct.get();
-        //         existingWarehouse.setProduct(existingProduct);
-        //     }
-        // }
-        // Add more fields as needed
-        repo.save(existingWarehouse);
-    } else {
-        throw new RuntimeException("Warehouse not found with id: " + id);
-    }
+
+        warehouseRepo.save(existingWarehouse);
     }
 
-    public void deleteWarehouse(Long id){
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-        } else {
-            throw new RuntimeException("Warehouse not found with id: " + id);
+    @Transactional
+    public void deleteWarehouse(Long id) {
+        if (!warehouseRepo.existsById(id)) {
+            throw new RuntimeException("Warehouse not found with ID: " + id);
         }
+        warehouseRepo.deleteById(id);
     }
 }

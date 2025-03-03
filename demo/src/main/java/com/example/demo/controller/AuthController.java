@@ -1,29 +1,32 @@
-package com.example.demo.controller;
+// // controller/AuthController.java
+// package com.example.demo.controller;
 
-import java.util.List;
+// import org.springframework.http.ResponseEntity;
+// import org.springframework.web.bind.annotation.PostMapping;
+// import org.springframework.web.bind.annotation.RequestBody;
+// import org.springframework.web.bind.annotation.RequestMapping;
+// import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+// import com.example.demo.dto.AuthResponse;
+// import com.example.demo.dto.LoginRequest;
+// import com.example.demo.dto.RegisterRequest;
+// import com.example.demo.service.AuthService;
 
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
+// import lombok.RequiredArgsConstructor;
 
+// @RestController
+// @RequestMapping("/api/auth")
+// @RequiredArgsConstructor
+// public class AuthController {
+//     private final AuthService authService;
 
-@Controller
-public class AuthController{
-@Autowired
-UserRepository repo;
+//     @PostMapping("/register")
+//     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+//         return ResponseEntity.ok(authService.register(request));
+//     }
 
-@GetMapping("/api/users")
-public List<User> getAllUsers() {
-    return repo.findAll();
-}
-
-@GetMapping("path")
-public String getMethodName(@RequestParam String param) {
-    return new String();
-}
-
-}
+//     @PostMapping("/login")
+//     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+//         return ResponseEntity.ok(authService.login(request));
+//     }
+// }

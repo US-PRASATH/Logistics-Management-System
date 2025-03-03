@@ -11,15 +11,15 @@ import { UserProvider } from './components/UserContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // useEffect(() => {
    
-    if (!isLoggedIn && window.location.pathname === "/") {
-      navigate("/login");
-    }
-  }, [isLoggedIn]);
+  //   if (!isLoggedIn && window.location.pathname === "/") {
+  //     navigate("/login");
+  //   }
+  // }, [isLoggedIn]);
 
   return (
     <UserProvider>

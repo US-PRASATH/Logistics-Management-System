@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,130 +10,92 @@ import com.example.demo.model.Supplier;
 import com.example.demo.model.Transporter;
 import com.example.demo.model.Warehouse;
 import com.example.demo.repository.ExpensesRepository;
-import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SupplierRepository;
 import com.example.demo.repository.TransporterRepository;
 import com.example.demo.repository.WarehouseRepository;
 
 @Service
-public class ExpensesService{
+public class ExpensesService {
     @Autowired
-    ExpensesRepository repo;
-
-    @Autowired
-    ProductRepository productRepo;
+    private ExpensesRepository repo;
 
     @Autowired
-    WarehouseRepository warehouseRepo;
+    private WarehouseRepository warehouseRepo;
 
     @Autowired
-    SupplierRepository supplierRepo;
+    private SupplierRepository supplierRepo;
 
     @Autowired
-    TransporterRepository transporterRepo;
+    private TransporterRepository transporterRepo;
 
-
-    public List<Expenses> getAllExpensess(){
+    public List<Expenses> getAllExpenses() {
         return repo.findAll();
     }
 
-    public Expenses getExpensesById(Long id){
-        Optional<Expenses> optionalExpenses = repo.findById(id);
-        return optionalExpenses.orElse(null); // Return the order if present, otherwise return null
+    public Expenses getExpenseById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Expense not found with id: " + id));
     }
 
-    public void createExpenses(Expenses order){
-        if (order.getWarehouse().getId() != null) {
-            Optional<Warehouse> optionalWarehouse = warehouseRepo.findById(order.getWarehouse().getId());
-            if(optionalWarehouse.isPresent()){
-                Warehouse existingWarehouse = optionalWarehouse.get();
-                order.setWarehouse(existingWarehouse);
-            }
-        }
-        if (order.getTransporter().getId() != null) {
-            Optional<Transporter> optionalTransporter = transporterRepo.findById(order.getTransporter().getId());
-            if(optionalTransporter.isPresent()){
-                Transporter existingTransporter = optionalTransporter.get();
-                order.setTransporter(existingTransporter);
-            }
-        }
-        if (order.getSupplier().getId() != null) {
-            Optional<Supplier> optionalSupplier = supplierRepo.findById(order.getSupplier().getId());
-            if(optionalSupplier.isPresent()){
-                Supplier existingSupplier = optionalSupplier.get();
-                order.setSupplier(existingSupplier);
-            }
-        }
-        repo.save(order);
+    public Expenses createExpense(Expenses expense) {
+        validateExpenseReferences(expense);
+        return repo.save(expense);
     }
 
-    public void updateExpenses(Long id, Expenses data){
-        Optional<Expenses> optionalExpenses = repo.findById(id);
-    if (optionalExpenses.isPresent()) {
-        Expenses existingExpenses = optionalExpenses.get();
-        // Update fields of the existing order with the new order data
-        // if (data.getCustomerName() != null) {
-        //     existingExpenses.setCustomerName(data.getCustomerName());
-        // }
-        // if (data.getProduct() != null) {
-        //     existingExpenses.setProduct(data.getProduct());
-        // }
-        if (existingExpenses.getWarehouse().getId() != null) {
-            Optional<Warehouse> optionalWarehouse = warehouseRepo.findById(existingExpenses.getWarehouse().getId());
-            if(optionalWarehouse.isPresent()){
-                Warehouse existingWarehouse = optionalWarehouse.get();
-                existingExpenses.setWarehouse(existingWarehouse);
-            }
-        }
-        // if (existingExpenses.getProduct().getId() != null) {
-        //     Optional<Product> optionalProduct = productRepo.findById(existingExpenses.getProduct().getId());
-        //     if(optionalProduct.isPresent()){
-        //         Product existingProduct = optionalProduct.get();
-        //         existingExpenses.setProduct(existingProduct);
-        //     }
-        // }
-        if (existingExpenses.getTransporter().getId() != null) {
-            Optional<Transporter> optionalTransporter = transporterRepo.findById(existingExpenses.getTransporter().getId());
-            if(optionalTransporter.isPresent()){
-                Transporter existingTransporter = optionalTransporter.get();
-                existingExpenses.setTransporter(existingTransporter);
-            }
-        }
-        if (existingExpenses.getSupplier().getId() != null) {
-            Optional<Supplier> optionalSupplier = supplierRepo.findById(existingExpenses.getSupplier().getId());
-            if(optionalSupplier.isPresent()){
-                Supplier existingSupplier = optionalSupplier.get();
-                existingExpenses.setSupplier(existingSupplier);
-            }
-        }
-        if (data.getExpenseType() != null) {
-            existingExpenses.setExpenseType(data.getExpenseType());
-        }
+    public Expenses updateExpense(Long id, Expenses data) {
+        Expenses existingExpense = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Expense not found with id: " + id));
+
         if (data.getAmount() != null) {
-            existingExpenses.setAmount(data.getAmount());
+            existingExpense.setAmount(data.getAmount());
         }
         if (data.getDate() != null) {
-            existingExpenses.setDate(data.getDate());
+            existingExpense.setDate(data.getDate());
         }
-        // if (data.getProduct().getId() != null) {
-        //     Optional<Product> optionalProduct = productRepo.findById(data.getProduct().getId());
-        //     if(optionalProduct.isPresent()){
-        //         Product existingProduct = optionalProduct.get();
-        //         existingExpenses.setProduct(existingProduct);
-        //     }
-        // }
-        // Add more fields as needed
-        repo.save(existingExpenses);
-    } else {
-        throw new RuntimeException("Expenses not found with id: " + id);
-    }
+        if (data.getExpenseType() != null) {
+            existingExpense.setExpenseType(data.getExpenseType());
+        }
+        if (data.getWarehouse() != null && data.getWarehouse().getId() != null) {
+            Warehouse warehouse = warehouseRepo.findById(data.getWarehouse().getId())
+                    .orElseThrow(() -> new RuntimeException("Warehouse not found"));
+            existingExpense.setWarehouse(warehouse);
+        }
+        if (data.getTransporter() != null && data.getTransporter().getId() != null) {
+            Transporter transporter = transporterRepo.findById(data.getTransporter().getId())
+                    .orElseThrow(() -> new RuntimeException("Transporter not found"));
+            existingExpense.setTransporter(transporter);
+        }
+        if (data.getSupplier() != null && data.getSupplier().getId() != null) {
+            Supplier supplier = supplierRepo.findById(data.getSupplier().getId())
+                    .orElseThrow(() -> new RuntimeException("Supplier not found"));
+            existingExpense.setSupplier(supplier);
+        }
+
+        return repo.save(existingExpense);
     }
 
-    public void deleteExpenses(Long id){
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-        } else {
-            throw new RuntimeException("Expenses not found with id: " + id);
+    public void deleteExpense(Long id) {
+        if (!repo.existsById(id)) {
+            throw new RuntimeException("Expense not found with id: " + id);
+        }
+        repo.deleteById(id);
+    }
+
+    private void validateExpenseReferences(Expenses expense) {
+        if (expense.getWarehouse() != null && expense.getWarehouse().getId() != null) {
+            Warehouse warehouse = warehouseRepo.findById(expense.getWarehouse().getId())
+                    .orElseThrow(() -> new RuntimeException("Warehouse not found"));
+            expense.setWarehouse(warehouse);
+        }
+        if (expense.getTransporter() != null && expense.getTransporter().getId() != null) {
+            Transporter transporter = transporterRepo.findById(expense.getTransporter().getId())
+                    .orElseThrow(() -> new RuntimeException("Transporter not found"));
+            expense.setTransporter(transporter);
+        }
+        if (expense.getSupplier() != null && expense.getSupplier().getId() != null) {
+            Supplier supplier = supplierRepo.findById(expense.getSupplier().getId())
+                    .orElseThrow(() -> new RuntimeException("Supplier not found"));
+            expense.setSupplier(supplier);
         }
     }
 }

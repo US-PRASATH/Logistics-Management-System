@@ -13,83 +13,99 @@ import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.WarehouseItemRepository;
 import com.example.demo.repository.WarehouseRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
-public class WarehouseService{
-    @Autowired
-    WarehouseItemRepository repo;
+public class WarehouseService {
 
     @Autowired
-    WarehouseRepository warehouseRepo;
+    private WarehouseItemRepository warehouseItemRepo;
 
     @Autowired
-    ProductRepository productRepo;
+    private WarehouseRepository warehouseRepo;
 
-    public List<WarehouseItem> getAllWarehouseItems(){
-        return repo.findAll();
+    @Autowired
+    private ProductRepository productRepo;
+
+    public List<WarehouseItem> getAllWarehouseItems() {
+        return warehouseItemRepo.findAll();
     }
 
-    public Optional<WarehouseItem> getWarehouseItemById(Long id){
-        return repo.findById(id);
+    public WarehouseItem getWarehouseItemById(Long id) {
+        return warehouseItemRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("WarehouseItem not found with ID: " + id));
     }
 
-    public void createWarehouseItem(WarehouseItem warehouseItem){
-        if (warehouseItem.getWarehouse().getId() != null) {
-            Optional<Warehouse> optionalWarehouse = warehouseRepo.findById(warehouseItem.getWarehouse().getId());
-            if(optionalWarehouse.isPresent()){
-                Warehouse existingWarehouse = optionalWarehouse.get();
-                warehouseItem.setWarehouse(existingWarehouse);
-            }
+    @Transactional
+    public void createWarehouseItem(WarehouseItem warehouseItem) {
+        // Validate and set Warehouse
+        if (warehouseItem.getWarehouse() == null || warehouseItem.getWarehouse().getId() == null) {
+            throw new IllegalArgumentException("Warehouse ID is mandatory");
         }
-        if (warehouseItem.getProduct().getId() != null) {
-            Optional<Product> optionalProduct = productRepo.findById(warehouseItem.getProduct().getId());
-            if(optionalProduct.isPresent()){
-                Product existingProduct = optionalProduct.get();
-                warehouseItem.setProduct(existingProduct);
-            }
+        Warehouse warehouse = warehouseRepo.findById(warehouseItem.getWarehouse().getId())
+                .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + warehouseItem.getWarehouse().getId()));
+        warehouseItem.setWarehouse(warehouse);
+
+        // Validate and set Product
+        if (warehouseItem.getProduct() == null || warehouseItem.getProduct().getId() == null) {
+            throw new IllegalArgumentException("Product ID is mandatory");
         }
-        repo.save(warehouseItem);
+        Product product = productRepo.findById(warehouseItem.getProduct().getId())
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + warehouseItem.getProduct().getId()));
+        warehouseItem.setProduct(product);
+        warehouseItem.getWarehouse().setRemainingCapacity(warehouseItem.getWarehouse().getRemainingCapacity() - warehouseItem.getQuantity());
+        warehouseItemRepo.save(warehouseItem);
     }
 
-    public void updateWarehouseItem(Long id, WarehouseItem warehouseItem){
-        Optional<WarehouseItem> optionalWarehouseItem = repo.findById(id);
-        if (optionalWarehouseItem.isPresent()) {
-            WarehouseItem existingWarehouseItem = optionalWarehouseItem.get();
-            if (warehouseItem.getItemName() != null) {
-                existingWarehouseItem.setItemName(warehouseItem.getItemName());
-            }
-            if (warehouseItem.getCategory() != null) {
-                existingWarehouseItem.setCategory(warehouseItem.getCategory());
-            }
-            if (warehouseItem.getQuantity() != null) {
-                existingWarehouseItem.setQuantity(warehouseItem.getQuantity());
-            }
-            if (warehouseItem.getStorageLocation() != null) {
-                existingWarehouseItem.setStorageLocation(warehouseItem.getStorageLocation());
-            }
-            if (existingWarehouseItem.getWarehouse().getId() != null) {
-                Optional<Warehouse> optionalWarehouse = warehouseRepo.findById(existingWarehouseItem.getWarehouse().getId());
-                if(optionalWarehouse.isPresent()){
-                    Warehouse existingWarehouse = optionalWarehouse.get();
-                    existingWarehouseItem.setWarehouse(existingWarehouse);
-                }
-            }
-            if (existingWarehouseItem.getProduct().getId() != null) {
-                Optional<Product> optionalProduct = productRepo.findById(existingWarehouseItem.getProduct().getId());
-                if(optionalProduct.isPresent()){
-                    Product existingProduct = optionalProduct.get();
-                    existingWarehouseItem.setProduct(existingProduct);
-                }
-            }
-            // Add more fields as needed
-            repo.save(existingWarehouseItem);
+    @Transactional
+    public void updateWarehouseItem(Long id, WarehouseItem warehouseItem) {
+        WarehouseItem existingWarehouseItem = warehouseItemRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("WarehouseItem not found with ID: " + id));
+
+        // Update fields if provided
+        if (warehouseItem.getItemName() != null) {
+            existingWarehouseItem.setItemName(warehouseItem.getItemName());
         }
+        if (warehouseItem.getCategory() != null) {
+            existingWarehouseItem.setCategory(warehouseItem.getCategory());
+        }
+        if (warehouseItem.getQuantity() != null) {
+            existingWarehouseItem.setQuantity(warehouseItem.getQuantity());
+        }
+        if (warehouseItem.getStorageLocation() != null) {
+            existingWarehouseItem.setStorageLocation(warehouseItem.getStorageLocation());
+        }
+
+        // Update Warehouse if provided
+        if (warehouseItem.getWarehouse() != null && warehouseItem.getWarehouse().getId() != null) {
+            Warehouse warehouse = warehouseRepo.findById(warehouseItem.getWarehouse().getId())
+                    .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + warehouseItem.getWarehouse().getId()));
+            existingWarehouseItem.setWarehouse(warehouse);
+        }
+
+        // Update Product if provided
+        if (warehouseItem.getProduct() != null && warehouseItem.getProduct().getId() != null) {
+            Product product = productRepo.findById(warehouseItem.getProduct().getId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with ID: " + warehouseItem.getProduct().getId()));
+            existingWarehouseItem.setProduct(product);
+        }
+
+        warehouseItemRepo.save(existingWarehouseItem);
     }
 
-    public void deleteWarehouseItem(Long id){
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-        } else {
-            throw new RuntimeException("Order not found with id: " + id);
+    @Transactional
+    public void deleteWarehouseItem(Long id) {
+        if (!warehouseItemRepo.existsById(id)) {
+            throw new RuntimeException("WarehouseItem not found with ID: " + id);
         }
+        
+        Optional<WarehouseItem> optionalWarehouseItem = warehouseItemRepo.findById(id);
+        if(optionalWarehouseItem.isPresent()){
+            WarehouseItem warehouseItem = optionalWarehouseItem.get();
+            warehouseItem.getWarehouse().setRemainingCapacity(warehouseItem.getWarehouse().getRemainingCapacity() + warehouseItem.getQuantity());
+            warehouseItemRepo.save(warehouseItem);
+        }
+        
+        warehouseItemRepo.deleteById(id);
     }
 }

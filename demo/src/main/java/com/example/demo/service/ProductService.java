@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,73 +10,58 @@ import com.example.demo.model.Supplier;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SupplierRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
-public class ProductService{
-    @Autowired
-    ProductRepository repo;
+public class ProductService {
+    private final ProductRepository productRepo;
+    private final SupplierRepository supplierRepo;
 
     @Autowired
-    ProductRepository productRepo;
-    @Autowired
-    SupplierRepository supplierRepo;
-
-
-    public List<Product> getAllProducts(){
-        return repo.findAll();
+    public ProductService(ProductRepository productRepo, SupplierRepository supplierRepo) {
+        this.productRepo = productRepo;
+        this.supplierRepo = supplierRepo;
     }
 
-    public Product getProductById(Long id){
-        Optional<Product> optionalProduct = repo.findById(id);
-        return optionalProduct.orElse(null); // Return the product if present, otherwise return null
+    public List<Product> getAllProducts() {
+        return productRepo.findAll();
     }
 
-    public void createProduct(Product product){
-        if (product.getSupplier().getId() != null) {
-            Optional<Supplier> optionalSupplier = supplierRepo.findById(product.getSupplier().getId());
-            if(optionalSupplier.isPresent()){
-                Supplier existingSupplier = optionalSupplier.get();
-                product.setSupplier(existingSupplier);
-            }
-        }
-        repo.save(product);
+    public Product getProductById(Long id) {
+        return productRepo.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
     }
 
-    public void updateProduct(Long id, Product data){
-        Optional<Product> optionalProduct = repo.findById(id);
-    if (optionalProduct.isPresent()) {
-        Product existingProduct = optionalProduct.get();
-        // Update fields of the existing product with the new product data
-        if (data.getName() != null) {
-            existingProduct.setName(data.getName());
+    public Product createProduct(Product product) {
+        if (product.getSupplier() != null && product.getSupplier().getId() != null) {
+            Supplier supplier = supplierRepo.findById(product.getSupplier().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
+            product.setSupplier(supplier);
         }
-        if (data.getCategory() != null) {
-            existingProduct.setCategory(data.getCategory());
-        }
-        if (data.getPrice() != null) {
-            existingProduct.setPrice(data.getPrice());
-        }
-        // if (data.getStatus() != null) {
-        //     existingProduct.setStatus(data.getStatus());
-        // }
-        if (data.getSupplier().getId() != null) {
-            Optional<Supplier> optionalSupplier = supplierRepo.findById(data.getSupplier().getId());
-            if(optionalSupplier.isPresent()){
-                Supplier existingSupplier = optionalSupplier.get();
-                existingProduct.setSupplier(existingSupplier);
-            }
-        }
-        // Add more fields as needed
-        repo.save(existingProduct);
-    } else {
-        throw new RuntimeException("Product not found with id: " + id);
-    }
+        return productRepo.save(product);
     }
 
-    public void deleteProduct(Long id){
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-        } else {
-            throw new RuntimeException("Product not found with id: " + id);
+    public Product updateProduct(Long id, Product productDetails) {
+        Product existingProduct = getProductById(id);
+        
+        existingProduct.setName(productDetails.getName() != null ? 
+            productDetails.getName() : existingProduct.getName());
+        existingProduct.setCategory(productDetails.getCategory() != null ? 
+            productDetails.getCategory() : existingProduct.getCategory());
+        existingProduct.setPrice(productDetails.getPrice() != null ? 
+            productDetails.getPrice() : existingProduct.getPrice());
+
+        if (productDetails.getSupplier() != null && productDetails.getSupplier().getId() != null) {
+            Supplier supplier = supplierRepo.findById(productDetails.getSupplier().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
+            existingProduct.setSupplier(supplier);
         }
+
+        return productRepo.save(existingProduct);
+    }
+
+    public void deleteProduct(Long id) {
+        Product product = getProductById(id);
+        productRepo.delete(product);
     }
 }

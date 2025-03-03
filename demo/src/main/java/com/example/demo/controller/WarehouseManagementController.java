@@ -15,37 +15,42 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.model.TransportPlan;
-import com.example.demo.service.TransportPlanService;
+import com.example.demo.model.Warehouse;
+import com.example.demo.service.WarehouseManagementService;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/transport-plans")
-public class TransportPlanController {
+@RequestMapping("/api/warehouses")
+public class WarehouseManagementController {
 
     @Autowired
-    private TransportPlanService transportPlanService;
+    private WarehouseManagementService warehouseService;
 
     @GetMapping
-    public ResponseEntity<List<TransportPlan>> getAllTransportPlans() {
-        return ResponseEntity.ok(transportPlanService.getAllTransportPlans());
+    public ResponseEntity<List<Warehouse>> getAllWarehouses() {
+        return ResponseEntity.ok(warehouseService.getAllWarehouses());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Warehouse> getWarehouseById(@PathVariable Long id) {
+        return ResponseEntity.ok(warehouseService.getWarehouseById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Void> createTransportPlan(@RequestBody TransportPlan transportPlan) {
-        transportPlanService.createTransportPlan(transportPlan);
+    public ResponseEntity<Void> createWarehouse(@RequestBody Warehouse warehouse) {
+        warehouseService.createWarehouse(warehouse);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateTransportPlan(@PathVariable Long id, @RequestBody TransportPlan transportPlan) {
-        transportPlanService.updateTransportPlan(id, transportPlan);
+    public ResponseEntity<Void> updateWarehouse(@PathVariable Long id, @RequestBody Warehouse warehouse) {
+        warehouseService.updateWarehouse(id, warehouse);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransportPlan(@PathVariable Long id) {
-        transportPlanService.deleteTransportPlan(id);
+    public ResponseEntity<Void> deleteWarehouse(@PathVariable Long id) {
+        warehouseService.deleteWarehouse(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,81 +1,52 @@
 package com.example.demo.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Transporter;
-import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.TransporterRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
-public class TransporterService{
-    @Autowired
-    TransporterRepository repo;
+public class TransporterService {
+    private final TransporterRepository transporterRepo;
 
     @Autowired
-    ProductRepository productRepo;
-    
-
-
-    public List<Transporter> getAllTransporters(){
-        return repo.findAll();
+    public TransporterService(TransporterRepository transporterRepo) {
+        this.transporterRepo = transporterRepo;
     }
 
-    public Transporter getTransporterById(Long id){
-        Optional<Transporter> optionalTransporter = repo.findById(id);
-        return optionalTransporter.orElse(null); // Return the order if present, otherwise return null
+    public List<Transporter> getAllTransporters() {
+        return transporterRepo.findAll();
     }
 
-    public void createTransporter(Transporter order){
-        // if (order.getProduct().getId() != null) {
-        //     Optional<Product> optionalProduct = productRepo.findById(order.getProduct().getId());
-        //     if(optionalProduct.isPresent()){
-        //         Product existingProduct = optionalProduct.get();
-        //         order.setProduct(existingProduct);
-        //     }
-        // }
-        repo.save(order);
+    public Transporter getTransporterById(Long id) {
+        return transporterRepo.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Transporter not found with id: " + id));
     }
 
-    public void updateTransporter(Long id, Transporter data){
-        Optional<Transporter> optionalTransporter = repo.findById(id);
-    if (optionalTransporter.isPresent()) {
-        Transporter existingTransporter = optionalTransporter.get();
-        // Update fields of the existing order with the new order data
-        if (data.getName() != null) {
-            existingTransporter.setName(data.getName());
-        }
-        if (data.getContactInfo() != null) {
-            existingTransporter.setContactInfo(data.getContactInfo());
-        }
-        if (data.getTransporterType() != null) {
-            existingTransporter.setTransporterType(data.getTransporterType());
-        }
-        // if (data.getStatus() != null) {
-        //     existingTransporter.setStatus(data.getStatus());
-        // }
-        // if (data.getProduct().getId() != null) {
-        //     Optional<Product> optionalProduct = productRepo.findById(data.getProduct().getId());
-        //     if(optionalProduct.isPresent()){
-        //         Product existingProduct = optionalProduct.get();
-        //         existingTransporter.setProduct(existingProduct);
-        //     }
-        // }
-        // Add more fields as needed
-        repo.save(existingTransporter);
-    } else {
-        throw new RuntimeException("Transporter not found with id: " + id);
-    }
+    public Transporter createTransporter(Transporter transporter) {
+        return transporterRepo.save(transporter);
     }
 
-    public void deleteTransporter(Long id){
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-        } else {
-            throw new RuntimeException("Transporter not found with id: " + id);
-        }
+    public Transporter updateTransporter(Long id, Transporter transporterDetails) {
+        Transporter existingTransporter = getTransporterById(id);
+        
+        existingTransporter.setName(transporterDetails.getName() != null ? 
+            transporterDetails.getName() : existingTransporter.getName());
+        existingTransporter.setContactInfo(transporterDetails.getContactInfo() != null ? 
+            transporterDetails.getContactInfo() : existingTransporter.getContactInfo());
+        existingTransporter.setTransporterType(transporterDetails.getTransporterType() != null ? 
+            transporterDetails.getTransporterType() : existingTransporter.getTransporterType());
+
+        return transporterRepo.save(existingTransporter);
+    }
+
+    public void deleteTransporter(Long id) {
+        Transporter transporter = getTransporterById(id);
+        transporterRepo.delete(transporter);
     }
 }

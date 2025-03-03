@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,77 +11,75 @@ import com.example.demo.model.Product;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.ProductRepository;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
-public class OrderService{
-    @Autowired
-    OrderRepository repo;
+public class OrderService {
+    private final OrderRepository orderRepo;
+    private final ProductRepository productRepo;
 
     @Autowired
-    ProductRepository productRepo;
-
-
-    public List<Order> getAllOrders(){
-        return repo.findAll();
+    public OrderService(OrderRepository orderRepo, ProductRepository productRepo) {
+        this.orderRepo = orderRepo;
+        this.productRepo = productRepo;
     }
 
-    public Order getOrderById(Long id){
-        Optional<Order> optionalOrder = repo.findById(id);
-        return optionalOrder.orElse(null); // Return the order if present, otherwise return null
+    public List<Order> getAllOrders() {
+        return orderRepo.findAll();
     }
 
-    public void createOrder(Order order){
-        if (order.getProduct().getId() != null) {
-            Optional<Product> optionalProduct = productRepo.findById(order.getProduct().getId());
-            if(optionalProduct.isPresent()){
-                Product existingProduct = optionalProduct.get();
-                order.setProduct(existingProduct);
-            }
-        }
-        repo.save(order);
+    public Order getOrderById(Long id) {
+        return orderRepo.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
     }
 
-    public void updateOrder(Long id, Order data){
-        Optional<Order> optionalOrder = repo.findById(id);
-    if (optionalOrder.isPresent()) {
-        Order existingOrder = optionalOrder.get();
-        // Update fields of the existing order with the new order data
-        if (data.getCustomerName() != null) {
-            existingOrder.setCustomerName(data.getCustomerName());
+    public Order createOrder(Order order) {
+        // Set order date if not provided
+        if (order.getOrderDate() == null) {
+            order.setOrderDate(LocalDate.now());
         }
-        // if (data.getProduct() != null) {
-        //     existingOrder.setProduct(data.getProduct());
-        // }
-        if (data.getQuantity() != null) {
-            existingOrder.setQuantity(data.getQuantity());
+
+        // Validate and set product
+        if (order.getProduct() != null && order.getProduct().getId() != null) {
+            Product product = productRepo.findById(order.getProduct().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            order.setProduct(product);
         }
-        if (data.getOrderDate() != null) {
-            existingOrder.setOrderDate(data.getOrderDate());
+
+        // Set default status if not provided
+        if (order.getStatus() == null) {
+            order.setStatus(Order.OrderStatus.PENDING);
         }
-        if (data.getTotalAmount() != null) {
-            existingOrder.setTotalAmount(data.getTotalAmount());
-        }
-        if (data.getStatus() != null) {
-            existingOrder.setStatus(data.getStatus());
-        }
-        if (data.getProduct().getId() != null) {
-            Optional<Product> optionalProduct = productRepo.findById(data.getProduct().getId());
-            if(optionalProduct.isPresent()){
-                Product existingProduct = optionalProduct.get();
-                existingOrder.setProduct(existingProduct);
-            }
-        }
-        // Add more fields as needed
-        repo.save(existingOrder);
-    } else {
-        throw new RuntimeException("Order not found with id: " + id);
-    }
+
+        return orderRepo.save(order);
     }
 
-    public void deleteOrder(Long id){
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-        } else {
-            throw new RuntimeException("Order not found with id: " + id);
+    public Order updateOrder(Long id, Order orderDetails) {
+        Order existingOrder = getOrderById(id);
+        
+        existingOrder.setCustomerName(orderDetails.getCustomerName() != null ? 
+            orderDetails.getCustomerName() : existingOrder.getCustomerName());
+        existingOrder.setQuantity(orderDetails.getQuantity() != null ? 
+            orderDetails.getQuantity() : existingOrder.getQuantity());
+        existingOrder.setOrderDate(orderDetails.getOrderDate() != null ? 
+            orderDetails.getOrderDate() : existingOrder.getOrderDate());
+        existingOrder.setStatus(orderDetails.getStatus() != null ? 
+            orderDetails.getStatus() : existingOrder.getStatus());
+            existingOrder.setLocation(orderDetails.getLocation() != null ? 
+            orderDetails.getLocation() : existingOrder.getLocation());
+
+        // Update product if provided
+        if (orderDetails.getProduct() != null && orderDetails.getProduct().getId() != null) {
+            Product product = productRepo.findById(orderDetails.getProduct().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            existingOrder.setProduct(product);
         }
+
+        return orderRepo.save(existingOrder);
+    }
+
+    public void deleteOrder(Long id) {
+        Order order = getOrderById(id);
+        orderRepo.delete(order);
     }
 }

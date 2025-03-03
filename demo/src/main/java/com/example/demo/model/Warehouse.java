@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "warehouse")
+@Table(name = "warehouses")
 public class Warehouse {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -21,4 +22,16 @@ public class Warehouse {
     private String name;
     private String location;
     private Integer capacity;
+    private Integer remainingCapacity;
+    // @OneToMany
+    // @JoinColumn(name = "warehouseitems_id")
+    // private WarehouseItem warehouseItem;
+    // Automatically set values before saving
+    @PrePersist
+    private void setRemainingCapacity() {
+    if (this.remainingCapacity == null) {
+        this.remainingCapacity = this.capacity;
+    }
 }
+}
+

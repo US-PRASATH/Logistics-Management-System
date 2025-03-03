@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,17 +23,17 @@ public class RestockingRequest {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @OneToOne
-    @JoinColumn(name = "supplier_id")
-    private Supplier supplier;
+    // @OneToOne
+    // @JoinColumn(name = "supplier_id")
+    // private Supplier supplier;
     private Integer quantity;
     @Enumerated(EnumType.STRING)
     private Status status;

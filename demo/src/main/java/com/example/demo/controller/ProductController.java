@@ -14,43 +14,43 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.model.Order;
-import com.example.demo.service.OrderService;
+import com.example.demo.model.Product;
+import com.example.demo.service.ProductService;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/orders")
-public class OrderController {
-    private final OrderService service;
+@RequestMapping("/api/products")
+public class ProductController {
+    private final ProductService service;
 
     @Autowired
-    public OrderController(OrderService service) {
+    public ProductController(ProductService service) {
         this.service = service;
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getOrders() {
-        return ResponseEntity.ok(service.getAllOrders());
+    public ResponseEntity<List<Product>> getProducts() {
+        return ResponseEntity.ok(service.getAllProducts());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getOrderById(id));
+    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getProductById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order data) {
-        return ResponseEntity.ok(service.createOrder(data));
+    public ResponseEntity<Product> createProduct(@RequestBody Product data) {
+        return ResponseEntity.ok(service.createProduct(data));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody Order data) {
-        return ResponseEntity.ok(service.updateOrder(id, data));
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product data) {
+        return ResponseEntity.ok(service.updateProduct(id, data));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        service.deleteOrder(id);
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        service.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
 }

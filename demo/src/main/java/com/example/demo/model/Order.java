@@ -1,6 +1,7 @@
 package com.example.demo.model;
 import java.time.LocalDate;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -8,7 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -35,7 +36,7 @@ public class Order{
     private Long id;
     private String customerName;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 
@@ -45,6 +46,10 @@ public class Order{
     
     private LocalDate orderDate;
     private Double totalAmount;
+    private String location;
+
+    @Column(nullable = true)
+    private String trackingNumber; // Initially NULL
 
     
     // @ManyToOne(cascade = CascadeType.ALL)
@@ -61,6 +66,16 @@ public class Order{
             this.totalAmount = 0.0;  // Default value if product or quantity is null
         }
     }
+
+    // @PrePersist
+    // @PreUpdate
+    // private void updateWarehouseItem() {
+    //     if (product != null && product.getPrice() != null && quantity != null) {
+    //         this.totalAmount = product.getPrice() * quantity;
+    //     } else {
+    //         this.totalAmount = 0.0;  // Default value if product or quantity is null
+    //     }
+    // }
 
     public enum OrderStatus {
         PENDING, 

@@ -1,133 +1,101 @@
-import React, { useState, useContext } from 'react';
+
+// Register.jsx
+import { useState, useContext } from 'react';
 import { UserContext } from './UserContext';
-import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    // companyName: "",
-    role: "",
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
-
-  const navigate = useNavigate();
+  
   const { setUser } = useContext(UserContext);
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password === formData.confirmPassword) {
-      alert(`Registration successful`);
-      setUser(formData);
-      axios.post("http://localhost:8080/user")
-      navigate("/login");
-    } else {
-      alert("Passwords do not match");
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        localStorage.setItem('token', data.token);
+        navigate('/');
+      } else {
+        alert('Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100" 
+         style={{backgroundImage: 'url("https://images.pexels.com/photos/906494/pexels-photo-906494.jpeg")', 
+                 backgroundSize: 'cover'}}>
       <div className="w-full max-w-md p-8 space-y-8 bg-white shadow-lg rounded-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Register</h2>
-
+        <h2 className="text-2xl font-bold text-center">Register</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+            <label className="block text-sm font-medium text-gray-700">Username</label>
             <input
               type="text"
               name="username"
-              id="username"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              onChange={handleChange}
-              value={formData.username}
+              onChange={(e) => setFormData({...formData, username: e.target.value})}
+              className="mt-1 block w-full px-3 py-2 border rounded-md"
+              required
             />
           </div>
-
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               name="email"
-              id="email"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              onChange={handleChange}
-              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              className="mt-1 block w-full px-3 py-2 border rounded-md"
+              required
             />
           </div>
-
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <label className="block text-sm font-medium text-gray-700">Password</label>
             <input
               type="password"
               name="password"
-              id="password"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              onChange={handleChange}
-              value={formData.password}
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              className="mt-1 block w-full px-3 py-2 border rounded-md"
+              required
             />
           </div>
-
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+            <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
             <input
               type="password"
               name="confirmPassword"
-              id="confirmPassword"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              onChange={handleChange}
-              value={formData.confirmPassword}
+              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              className="mt-1 block w-full px-3 py-2 border rounded-md"
+              required
             />
           </div>
-
-          {/* <div>
-            <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Company Name</label>
-            <input
-              type="text"
-              name="companyName"
-              id="companyName"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              onChange={handleChange}
-              value={formData.companyName}
-            />
-          </div> */}
-
-<div>
-  <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
-  <select
-    name="role"
-    id="role"
-    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-    onChange={handleChange}
-    value={formData.role}
-  >
-    <option value="" disabled>Select a role</option>
-    <option value="ADMIN">Admin</option>
-    <option value="SUPPLIER">Supplier</option>
-    <option value="CUSTOMER">Customer</option>
-    <option value="TRANSPORTER">Transporter</option>
-  </select>
-</div>
-
-
-          <div>
-            <input
-              type="submit"
-              value="Register"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            />
-          </div>
+          <button type="submit" className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            Register
+          </button>
         </form>
+        <p className="text-center">
+          Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
+        </p>
       </div>
     </div>
   );

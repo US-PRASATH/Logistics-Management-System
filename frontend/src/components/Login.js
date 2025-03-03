@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { UserContext } from './UserContext';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = (props) => {
   const [formData, setFormData] = useState({
@@ -22,12 +23,20 @@ const Login = (props) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (user && formData.username === user.username && formData.password === user.password) {
+    axios.post("http://localhost:8080/api/auth/login",{
+      "username":formData.username,
+      "password":formData.password
+    }).then((response)=>{
+      localStorage.setItem("token",response.data);
       props.setIsLoggedIn(true);
       navigate("/");
-    } else {
-      alert("Invalid credentials");
-    }
+    });
+    // if (user && formData.username === user.username && formData.password === user.password) {
+    //   props.setIsLoggedIn(true);
+    //   navigate("/");
+    // } else {
+    //   alert("Invalid credentials");
+    // }
   };
 
   return (
