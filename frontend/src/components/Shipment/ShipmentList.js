@@ -39,7 +39,7 @@ const ShipmentList = () => {
 
   const handleUpdateStatus = async (id, newStatus) => {
     try {
-      await api.put(`/api/shipments/${id}/status`, { status: newStatus });
+      await api.put(`/api/shipments/${id}/status`, newStatus);
       
       // Update the shipment in the local state
       setShipments(shipments.map(shipment => 

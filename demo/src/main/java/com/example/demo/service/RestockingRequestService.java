@@ -152,8 +152,15 @@ public class RestockingRequestService {
         if (newStatus == RestockingRequest.Status.DELIVERED) {
             WarehouseItem warehouseItem = warehouseItemRepository
                     .findByWarehouseIdAndProductId(restockingRequest.getWarehouse().getId(), restockingRequest.getProduct().getId())
-                    .orElseThrow(() -> new RuntimeException("WarehouseItem not found"));
-
+                    // .orElseThrow(() -> new RuntimeException("WarehouseItem not found"));
+                    .orElseGet(() -> {
+                    // Create a new WarehouseItem if it doesn't exist
+                    WarehouseItem newItem = new WarehouseItem();
+                    newItem.setWarehouse(restockingRequest.getWarehouse());
+                    newItem.setProduct(restockingRequest.getProduct());
+                    newItem.setQuantity(0); // initialize with 0 or any business-defined default
+                    return newItem;
+                });
             // if (warehouseItem.getQuantity() < restockingRequest.getQuantity()) {
             //     throw new RuntimeException("Insufficient stock in warehouse");
             // }
