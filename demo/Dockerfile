@@ -1,5 +1,5 @@
-# Stage 1: Build the jar using Maven
-FROM maven:3.9.4-eclipse-temurin-11 AS build
+# Stage 1: Build the jar using Maven with Java 17
+FROM maven:3.9.4-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
@@ -14,8 +14,8 @@ COPY src ./src
 
 RUN ./mvnw clean package -DskipTests
 
-# Stage 2: Run the app with JRE 11
-FROM eclipse-temurin:11-jre-alpine
+# Stage 2: Run the app with JRE 17
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
