@@ -44,6 +44,10 @@ public class TransportPlan{
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     // @OneToOne
     // @JoinColumn(name = "warehouse_id")
     // private Warehouse warehouse;

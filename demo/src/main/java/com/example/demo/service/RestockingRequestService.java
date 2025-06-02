@@ -37,20 +37,23 @@ public class RestockingRequestService {
     @Autowired
     private WarehouseItemRepository warehouseItemRepository;
 
+      @Autowired
+    private TenantService tenantService;
+
     public List<RestockingRequest> getAllRestockingRequests() {
-        return restockingRequestRepo.findAll();
+        return restockingRequestRepo.findByUserId(tenantService.getCurrentUserId());
     }
 
     @Transactional
     public List<RestockingRequest> getAllRestockingRequestsForSupplier(Long supplierId) {
         // Fetch all restocking requests for products that belong to this supplier
-        return restockingRequestRepo.findAll().stream()
+        return restockingRequestRepo.findByUserId(tenantService.getCurrentUserId()).stream()
                 .filter(req -> req.getProduct().getSupplier().getId().equals(supplierId))
                 .collect(Collectors.toList());
     }
 
     public RestockingRequest getRestockingRequestById(Long id) {
-        return restockingRequestRepo.findById(id)
+        return restockingRequestRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("RestockingRequest not found with ID: " + id));
     }
 
@@ -60,7 +63,7 @@ public class RestockingRequestService {
         if (restockingRequest.getWarehouse() == null || restockingRequest.getWarehouse().getId() == null) {
             throw new IllegalArgumentException("Warehouse ID is mandatory");
         }
-        Warehouse warehouse = warehouseRepo.findById(restockingRequest.getWarehouse().getId())
+        Warehouse warehouse = warehouseRepo.findByIdAndUserId(restockingRequest.getWarehouse().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + restockingRequest.getWarehouse().getId()));
         restockingRequest.setWarehouse(warehouse);
 
@@ -69,7 +72,7 @@ public class RestockingRequestService {
         if (restockingRequest.getProduct() == null || restockingRequest.getProduct().getId() == null) {
             throw new IllegalArgumentException("Product ID is mandatory");
         }
-        Product product = productRepo.findById(restockingRequest.getProduct().getId())
+        Product product = productRepo.findByIdAndUserId(restockingRequest.getProduct().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + restockingRequest.getProduct().getId()));
         restockingRequest.setProduct(product);
 
@@ -77,7 +80,7 @@ public class RestockingRequestService {
         if (restockingRequest.getProduct().getSupplier() == null || restockingRequest.getProduct().getSupplier().getId() == null) {
             throw new IllegalArgumentException("Supplier ID is mandatory");
         }
-        Supplier supplier = supplierRepo.findById(restockingRequest.getProduct().getSupplier().getId())
+        Supplier supplier = supplierRepo.findByIdAndUserId(restockingRequest.getProduct().getSupplier().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + restockingRequest.getProduct().getSupplier().getId()));
         restockingRequest.getProduct().setSupplier(supplier);
 
@@ -85,12 +88,13 @@ public class RestockingRequestService {
             throw new RuntimeException("Quantity exceeded available Warehouse capacity");
         }
 
+        restockingRequest.setUser(tenantService.getCurrentUser());
         restockingRequestRepo.save(restockingRequest);
     }
 
     @Transactional
     public void updateRestockingRequest(Long id, RestockingRequest data) {
-        RestockingRequest existingRestockingRequest = restockingRequestRepo.findById(id)
+        RestockingRequest existingRestockingRequest = restockingRequestRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("RestockingRequest not found with ID: " + id));
 
         // Update fields if provided
@@ -103,21 +107,21 @@ public class RestockingRequestService {
 
         // Update Warehouse if provided
         if (data.getWarehouse() != null && data.getWarehouse().getId() != null) {
-            Warehouse warehouse = warehouseRepo.findById(data.getWarehouse().getId())
+            Warehouse warehouse = warehouseRepo.findByIdAndUserId(data.getWarehouse().getId(), tenantService.getCurrentUserId())
                     .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + data.getWarehouse().getId()));
             existingRestockingRequest.setWarehouse(warehouse);
         }
 
         // Update Product if provided
         if (data.getProduct() != null && data.getProduct().getId() != null) {
-            Product product = productRepo.findById(data.getProduct().getId())
+            Product product = productRepo.findByIdAndUserId(data.getProduct().getId(), tenantService.getCurrentUserId())
                     .orElseThrow(() -> new RuntimeException("Product not found with ID: " + data.getProduct().getId()));
             existingRestockingRequest.setProduct(product);
         }
 
         // Update Supplier if provided
         if (data.getProduct().getSupplier() != null && data.getProduct().getSupplier().getId() != null) {
-            Supplier supplier = supplierRepo.findById(data.getProduct().getSupplier().getId())
+            Supplier supplier = supplierRepo.findByIdAndUserId(data.getProduct().getSupplier().getId(), tenantService.getCurrentUserId())
                     .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + data.getProduct().getSupplier().getId()));
             existingRestockingRequest.getProduct().setSupplier(supplier);
         }
@@ -125,18 +129,31 @@ public class RestockingRequestService {
         restockingRequestRepo.save(existingRestockingRequest);
     }
 
+    // @Transactional
+    // public void deleteRestockingRequest(Long id) {
+    //     if (!restockingRequestRepo.existsById(id)) {
+    //         throw new RuntimeException("RestockingRequest not found with ID: " + id);
+    //     }
+    //     restockingRequestRepo.deleteById(id);
+    // }
+
     @Transactional
-    public void deleteRestockingRequest(Long id) {
-        if (!restockingRequestRepo.existsById(id)) {
-            throw new RuntimeException("RestockingRequest not found with ID: " + id);
-        }
-        restockingRequestRepo.deleteById(id);
-    }
+public void deleteRestockingRequest(Long id) {
+    Long userId = tenantService.getCurrentUserId();
+
+    // Ensure ownership
+    restockingRequestRepo.findByIdAndUserId(id, userId)
+        .orElseThrow(() -> new RuntimeException("RestockingRequest not found or unauthorized access with ID: " + id));
+
+    // Safe delete
+    restockingRequestRepo.deleteByIdAndUserId(id, userId);
+}
+
 
 
     @Transactional
     public void updateRestockingRequestStatus(Long restockingRequestId, RestockingRequest.Status newStatus) {
-        RestockingRequest restockingRequest = restockingRequestRepo.findById(restockingRequestId)
+        RestockingRequest restockingRequest = restockingRequestRepo.findByIdAndUserId(restockingRequestId, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("RestockingRequest not found"));
 
         // Prevent changing status after delivery
@@ -151,7 +168,7 @@ public class RestockingRequestService {
         // If the status is changed to DELIVERED, update warehouse stock
         if (newStatus == RestockingRequest.Status.DELIVERED) {
             WarehouseItem warehouseItem = warehouseItemRepository
-                    .findByWarehouseIdAndProductId(restockingRequest.getWarehouse().getId(), restockingRequest.getProduct().getId())
+                    .findByWarehouseIdAndProductIdAndUserId(restockingRequest.getWarehouse().getId(), restockingRequest.getProduct().getId(), tenantService.getCurrentUserId())
                     // .orElseThrow(() -> new RuntimeException("WarehouseItem not found"));
                     .orElseGet(() -> {
                     // Create a new WarehouseItem if it doesn't exist
@@ -159,6 +176,7 @@ public class RestockingRequestService {
                     newItem.setWarehouse(restockingRequest.getWarehouse());
                     newItem.setProduct(restockingRequest.getProduct());
                     newItem.setQuantity(0); // initialize with 0 or any business-defined default
+                    newItem.setUser(tenantService.getCurrentUser());
                     return newItem;
                 });
             // if (warehouseItem.getQuantity() < restockingRequest.getQuantity()) {

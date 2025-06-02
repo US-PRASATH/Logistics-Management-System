@@ -35,6 +35,10 @@ public class WarehouseItem{
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     // Automatically set values before saving
     @PrePersist
     @PreUpdate

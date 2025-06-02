@@ -82,7 +82,7 @@ const RevenueReport = () => {
       <div className="bg-white shadow rounded-lg p-6 mb-6">
         <h2 className="text-lg font-medium text-gray-900 mb-2">Total Revenue</h2>
         <div className="flex items-center">
-          <div className="text-3xl font-bold text-gray-900">${totalRevenue.toFixed(2)}</div>
+          <div className="text-3xl font-bold text-gray-900">₹{totalRevenue.toFixed(2)}</div>
         </div>
       </div>
 

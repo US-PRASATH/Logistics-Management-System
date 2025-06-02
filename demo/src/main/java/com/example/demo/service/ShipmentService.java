@@ -142,16 +142,19 @@ public class ShipmentService {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
+      @Autowired
+    private TenantService tenantService;
+
     public List<Shipment> getAllShipments() {
-        return shipmentRepository.findAll();
+        return shipmentRepository.findByUserId(tenantService.getCurrentUserId());
     }
 
     public Optional<Shipment> getShipmentById(Long id) {
-        return shipmentRepository.findById(id);
+        return shipmentRepository.findByIdAndUserId(id, tenantService.getCurrentUserId());
     }
 
     public Optional<Shipment> getShipmentByTrackingNumber(String trackingNumber) {
-        return shipmentRepository.findByTrackingNumber(trackingNumber);
+        return shipmentRepository.findByTrackingNumberAndUserId(trackingNumber, tenantService.getCurrentUserId());
     }
 
     @Transactional
@@ -164,14 +167,14 @@ public class ShipmentService {
         shipment.setDestinationLocation(transportPlan.getDestinationLocation());
         shipment.setEstimatedDeliveryDate(transportPlan.getSchedule());
         shipment.setStatus(Shipment.Status.IN_TRANSIT);
-        
+        shipment.setUser(tenantService.getCurrentUser());
         return shipmentRepository.save(shipment);
     }
 
     @Transactional
     public Shipment updateShipmentFromTransportPlan(TransportPlan transportPlan) {
         // Shipment optionalShipment = shipmentRepository.findByTransportPlanId(transportPlan.getId());
-        Shipment existingShipment = ((Shipment) shipmentRepository.findByTransportPlanId(transportPlan.getId()));
+        Shipment existingShipment = ((Shipment) shipmentRepository.findByTransportPlanIdAndUserId(transportPlan.getId(), tenantService.getCurrentUserId()));
                 // .orElseThrow(() -> new RuntimeException("Shipment not found for TransportPlan ID: " + transportPlan.getId()));
 
         existingShipment.setOriginLocation(transportPlan.getOriginLocation());
@@ -185,12 +188,12 @@ public class ShipmentService {
 
     @Transactional
     public void deleteShipmentByTransportPlanId(Long transportPlanId) {
-        shipmentRepository.deleteByTransportPlanId(transportPlanId);
+        shipmentRepository.deleteByTransportPlanIdAndUserId(transportPlanId, tenantService.getCurrentUserId());
     }
 
     @Transactional
     public void updateShipmentStatus(Long shipmentId, Shipment.Status newStatus) {
-        Shipment shipment = shipmentRepository.findById(shipmentId)
+        Shipment shipment = shipmentRepository.findByIdAndUserId(shipmentId, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Shipment not found"));
 
         if (shipment.getStatus() == Shipment.Status.DELIVERED) {
@@ -208,7 +211,7 @@ public class ShipmentService {
     private void updateWarehouseStock(Shipment shipment) {
         // Your existing warehouse stock update logic
         WarehouseItem warehouseItem = warehouseItemRepository
-                    .findByWarehouseIdAndProductId(shipment.getTransportPlan().getWarehouse().getId(), shipment.getOrder().getProduct().getId())
+                    .findByWarehouseIdAndProductIdAndUserId(shipment.getTransportPlan().getWarehouse().getId(), shipment.getOrder().getProduct().getId(), tenantService.getCurrentUserId())
                     .orElseThrow(() -> new RuntimeException("WarehouseItem not found"));
 
             if (warehouseItem.getQuantity() < shipment.getOrder().getQuantity()) {

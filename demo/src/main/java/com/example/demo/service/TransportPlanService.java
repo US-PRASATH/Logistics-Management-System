@@ -134,12 +134,15 @@ public class TransportPlanService {
     @Autowired
     private WarehouseItemRepository warehouseItemRepository;
 
+      @Autowired
+    private TenantService tenantService;
+
     public List<TransportPlan> getAllTransportPlans() {
-        return transportPlanRepo.findAll();
+        return transportPlanRepo.findByUserId(tenantService.getCurrentUserId());
     }
 
     public Optional<TransportPlan> getTransportPlanById(Long id) {
-        return transportPlanRepo.findById(id);
+        return transportPlanRepo.findByIdAndUserId(id, tenantService.getCurrentUserId());
     }
 
     @Transactional
@@ -148,7 +151,7 @@ public class TransportPlanService {
         if (transportPlan.getOrder() == null || transportPlan.getOrder().getId() == null) {
             throw new IllegalArgumentException("Order ID is mandatory");
         }
-        Order order = orderRepo.findById(transportPlan.getOrder().getId())
+        Order order = orderRepo.findByIdAndUserId(transportPlan.getOrder().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Order not found with ID: " + transportPlan.getOrder().getId()));
         transportPlan.setOrder(order);
 
@@ -156,23 +159,24 @@ public class TransportPlanService {
         if (transportPlan.getTransporter() == null || transportPlan.getTransporter().getId() == null) {
             throw new IllegalArgumentException("Transporter ID is mandatory");
         }
-        Transporter transporter = transporterRepo.findById(transportPlan.getTransporter().getId())
+        Transporter transporter = transporterRepo.findByIdAndUserId(transportPlan.getTransporter().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Transporter not found with ID: " + transportPlan.getTransporter().getId()));
         transportPlan.setTransporter(transporter);
 
         if (transportPlan.getWarehouse() == null || transportPlan.getWarehouse().getId() == null) {
             throw new IllegalArgumentException("Warehouse ID is mandatory");
         }
-        Warehouse warehouse = warehouseRepo.findById(transportPlan.getWarehouse().getId())
+        Warehouse warehouse = warehouseRepo.findByIdAndUserId(transportPlan.getWarehouse().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + transportPlan.getWarehouse().getId()));
         transportPlan.setWarehouse(warehouse);
-        WarehouseItem warehouseItem = warehouseItemRepository.findByWarehouseIdAndProductId(transportPlan.getWarehouse().getId(), transportPlan.getOrder().getProduct().getId())
+        WarehouseItem warehouseItem = warehouseItemRepository.findByWarehouseIdAndProductIdAndUserId(transportPlan.getWarehouse().getId(), transportPlan.getOrder().getProduct().getId(), tenantService.getCurrentUserId())
                     .orElseThrow(() -> new RuntimeException("WarehouseItem not found"));
 
             if (warehouseItem.getQuantity() < transportPlan.getOrder().getQuantity()) {
                 throw new RuntimeException("Insufficient stock in warehouse");
             }
         // Save transport plan
+        transportPlan.setUser(tenantService.getCurrentUser());
         TransportPlan savedPlan = transportPlanRepo.save(transportPlan);
         
         // Create associated shipment
@@ -183,7 +187,7 @@ public class TransportPlanService {
 
     @Transactional
     public TransportPlan updateTransportPlan(Long id, TransportPlan transportPlan) {
-        TransportPlan existingTransportPlan = transportPlanRepo.findById(id)
+        TransportPlan existingTransportPlan = transportPlanRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("TransportPlan not found with ID: " + id));
 
         // Update fields if provided
@@ -202,14 +206,14 @@ public class TransportPlanService {
 
         // Update Order if provided
         if (transportPlan.getOrder() != null && transportPlan.getOrder().getId() != null) {
-            Order order = orderRepo.findById(transportPlan.getOrder().getId())
+            Order order = orderRepo.findByIdAndUserId(transportPlan.getOrder().getId(), tenantService.getCurrentUserId())
                     .orElseThrow(() -> new RuntimeException("Order not found with ID: " + transportPlan.getOrder().getId()));
             existingTransportPlan.setOrder(order);
         }
 
         // Update Transporter if provided
         if (transportPlan.getTransporter() != null && transportPlan.getTransporter().getId() != null) {
-            Transporter transporter = transporterRepo.findById(transportPlan.getTransporter().getId())
+            Transporter transporter = transporterRepo.findByIdAndUserId(transportPlan.getTransporter().getId(), tenantService.getCurrentUserId())
                     .orElseThrow(() -> new RuntimeException("Transporter not found with ID: " + transportPlan.getTransporter().getId()));
             existingTransportPlan.setTransporter(transporter);
         }
@@ -223,14 +227,31 @@ public class TransportPlanService {
         return updatedPlan;
     }
 
+    // @Transactional
+    // public void deleteTransportPlan(Long id) {
+    //     if (!transportPlanRepo.existsById(id)) {
+    //         throw new RuntimeException("TransportPlan not found with ID: " + id);
+    //     }
+    //     // Delete associated shipment first
+    //     shipmentService.deleteShipmentByTransportPlanId(id);
+    //     // Then delete transport plan
+    //     transportPlanRepo.deleteById(id);
+    // }
+
     @Transactional
-    public void deleteTransportPlan(Long id) {
-        if (!transportPlanRepo.existsById(id)) {
-            throw new RuntimeException("TransportPlan not found with ID: " + id);
-        }
-        // Delete associated shipment first
-        shipmentService.deleteShipmentByTransportPlanId(id);
-        // Then delete transport plan
-        transportPlanRepo.deleteById(id);
+public void deleteTransportPlan(Long id) {
+    Long currentUserId = tenantService.getCurrentUserId();
+
+    Optional<TransportPlan> optionalTransportPlan = transportPlanRepo.findByIdAndUserId(id, currentUserId);
+    if (optionalTransportPlan.isEmpty()) {
+        throw new RuntimeException("TransportPlan not found or unauthorized access with ID: " + id);
     }
+
+    // Delete associated shipment(s)
+    shipmentService.deleteShipmentByTransportPlanId(id);
+
+    // Delete the transport plan safely
+    transportPlanRepo.deleteByIdAndUserId(id, currentUserId);
+}
+
 }

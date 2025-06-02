@@ -40,6 +40,10 @@ public class Expenses {
     @ManyToOne
     @JoinColumn(name = "supplier_id", nullable = true)
     private Supplier supplier;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
     
     @Enumerated(EnumType.STRING)
     private ExpenseType expenseType;

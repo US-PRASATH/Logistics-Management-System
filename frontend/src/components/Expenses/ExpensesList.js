@@ -118,7 +118,7 @@ const ExpensesList = () => {
       <div className="bg-white shadow rounded-lg p-6 mb-6">
         <h2 className="text-lg font-medium text-gray-900 mb-2">Summary</h2>
         <div className="flex items-center">
-          <div className="text-3xl font-bold text-gray-900">${totalExpenses.toFixed(2)}</div>
+          <div className="text-3xl font-bold text-gray-900">₹{totalExpenses.toFixed(2)}</div>
           <div className="ml-2 text-sm text-gray-500">total expenses</div>
         </div>
       </div>

@@ -24,12 +24,20 @@ public class OrderService {
         this.productRepo = productRepo;
     }
 
+      @Autowired
+    private TenantService tenantService;
+
     public List<Order> getAllOrders() {
-        return orderRepo.findAll();
+        return orderRepo.findByUserId(tenantService.getCurrentUserId());
+    }
+
+    public List<Order> getAllOrdersWithoutTransportPlans() {
+        Long userId = tenantService.getCurrentUserId();
+    return orderRepo.findUndeliveredOrWithoutTransportPlanByUserId(userId);
     }
 
     public Order getOrderById(Long id) {
-        return orderRepo.findById(id)
+        return orderRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
             .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
     }
 
@@ -41,7 +49,7 @@ public class OrderService {
 
         // Validate and set product
         if (order.getProduct() != null && order.getProduct().getId() != null) {
-            Product product = productRepo.findById(order.getProduct().getId())
+            Product product = productRepo.findByIdAndUserId(order.getProduct().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
             order.setProduct(product);
         }
@@ -50,7 +58,7 @@ public class OrderService {
         if (order.getStatus() == null) {
             order.setStatus(Order.OrderStatus.PENDING);
         }
-
+        order.setUser(tenantService.getCurrentUser());
         return orderRepo.save(order);
     }
 
@@ -70,7 +78,7 @@ public class OrderService {
 
         // Update product if provided
         if (orderDetails.getProduct() != null && orderDetails.getProduct().getId() != null) {
-            Product product = productRepo.findById(orderDetails.getProduct().getId())
+            Product product = productRepo.findByIdAndUserId(orderDetails.getProduct().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
             existingOrder.setProduct(product);
         }
@@ -78,8 +86,20 @@ public class OrderService {
         return orderRepo.save(existingOrder);
     }
 
+    // public void deleteOrder(Long id) {
+    //     Order order = getOrderById(id);
+    //     orderRepo.delete(order);
+    // }
+
     public void deleteOrder(Long id) {
-        Order order = getOrderById(id);
-        orderRepo.delete(order);
-    }
+    Long userId = tenantService.getCurrentUserId();
+
+    // Ensure the order exists and belongs to user
+    orderRepo.findByIdAndUserId(id, userId)
+        .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
+
+    // Tenant-safe and efficient deletion
+    orderRepo.deleteByIdAndUserId(id, userId);
+}
+
 }

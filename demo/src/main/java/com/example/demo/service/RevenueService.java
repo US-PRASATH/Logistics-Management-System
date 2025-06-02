@@ -13,19 +13,22 @@ public class RevenueService {
     @Autowired
     private OrderRepository orderRepository;
 
+      @Autowired
+    private TenantService tenantService;
+
     public double getTotalRevenue() {
-        return orderRepository.getTotalRevenue();
+        return orderRepository.getTotalRevenue(tenantService.getCurrentUserId());
     }
 
     public List<Object[]> getDailyRevenue() {
-        return orderRepository.getDailyRevenue();
+        return orderRepository.getDailyRevenue(tenantService.getCurrentUserId());
     }
 
     public List<Object[]> getMonthlyRevenue() {
-        return orderRepository.getMonthlyRevenue();
+        return orderRepository.getMonthlyRevenue(tenantService.getCurrentUserId());
     }
 
     public List<Object[]> getYearlyRevenue() {
-        return orderRepository.getYearlyRevenue();
+        return orderRepository.getYearlyRevenue(tenantService.getCurrentUserId());
     }
 }

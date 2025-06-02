@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,15 @@ public class WarehouseManagementService {
     @Autowired
     private WarehouseRepository warehouseRepo;
 
+      @Autowired
+    private TenantService tenantService;
+
     public List<Warehouse> getAllWarehouses() {
-        return warehouseRepo.findAll();
+        return warehouseRepo.findByUserId(tenantService.getCurrentUserId());
     }
 
     public Warehouse getWarehouseById(Long id) {
-        return warehouseRepo.findById(id)
+        return warehouseRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + id));
     }
 
@@ -31,12 +35,13 @@ public class WarehouseManagementService {
         if (warehouse.getName() == null || warehouse.getLocation() == null || warehouse.getCapacity() == null) {
             throw new IllegalArgumentException("Name, location, and capacity are mandatory");
         }
+        warehouse.setUser(tenantService.getCurrentUser());
         warehouseRepo.save(warehouse);
     }
 
     @Transactional
     public void updateWarehouse(Long id, Warehouse data) {
-        Warehouse existingWarehouse = warehouseRepo.findById(id)
+        Warehouse existingWarehouse = warehouseRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + id));
 
         // Update fields if provided
@@ -53,11 +58,26 @@ public class WarehouseManagementService {
         warehouseRepo.save(existingWarehouse);
     }
 
+    // @Transactional
+    // public void deleteWarehouse(Long id) {
+    //     if (!warehouseRepo.existsById(id)) {
+    //         throw new RuntimeException("Warehouse not found with ID: " + id);
+    //     }
+    //     warehouseRepo.deleteById(id);
+    // }
+
     @Transactional
-    public void deleteWarehouse(Long id) {
-        if (!warehouseRepo.existsById(id)) {
-            throw new RuntimeException("Warehouse not found with ID: " + id);
-        }
-        warehouseRepo.deleteById(id);
+public void deleteWarehouse(Long id) {
+    Long currentUserId = tenantService.getCurrentUserId();
+
+    // Only retrieve the warehouse if it belongs to the current user
+    Optional<Warehouse> optionalWarehouse = warehouseRepo.findByIdAndUserId(id, currentUserId);
+
+    if (optionalWarehouse.isEmpty()) {
+        throw new RuntimeException("Warehouse not found or unauthorized access with ID: " + id);
     }
+
+    warehouseRepo.deleteByIdAndUserId(id, currentUserId);
+}
+
 }

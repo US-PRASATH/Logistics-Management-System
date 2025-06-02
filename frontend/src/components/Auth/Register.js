@@ -35,7 +35,8 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const result = await register(formData);
+      const { confirmPassword, ...newFormData } = formData;
+      const result = await register(newFormData);
       if (result.success) {
         navigate('/login');
       } else {

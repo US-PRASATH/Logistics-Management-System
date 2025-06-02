@@ -19,16 +19,20 @@ public class TransporterService {
         this.transporterRepo = transporterRepo;
     }
 
+      @Autowired
+    private TenantService tenantService;
+
     public List<Transporter> getAllTransporters() {
-        return transporterRepo.findAll();
+        return transporterRepo.findByUserId(tenantService.getCurrentUserId());
     }
 
     public Transporter getTransporterById(Long id) {
-        return transporterRepo.findById(id)
+        return transporterRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
             .orElseThrow(() -> new EntityNotFoundException("Transporter not found with id: " + id));
     }
 
     public Transporter createTransporter(Transporter transporter) {
+        transporter.setUser(tenantService.getCurrentUser());
         return transporterRepo.save(transporter);
     }
 
@@ -45,8 +49,20 @@ public class TransporterService {
         return transporterRepo.save(existingTransporter);
     }
 
+    // public void deleteTransporter(Long id) {
+    //     Transporter transporter = getTransporterById(id);
+    //     transporterRepo.delete(transporter);
+    // }
+
     public void deleteTransporter(Long id) {
-        Transporter transporter = getTransporterById(id);
-        transporterRepo.delete(transporter);
-    }
+    Long userId = tenantService.getCurrentUserId();
+    
+    // Check ownership
+    transporterRepo.findByIdAndUserId(id, userId)
+        .orElseThrow(() -> new EntityNotFoundException("Transporter not found with id: " + id));
+    
+    // Safe deletion using userId
+    transporterRepo.deleteByIdAndUserId(id, userId);
+}
+
 }

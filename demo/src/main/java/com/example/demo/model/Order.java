@@ -51,6 +51,10 @@ public class Order{
     @Column(nullable = true)
     private String trackingNumber; // Initially NULL
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     
     // @ManyToOne(cascade = CascadeType.ALL)
     // @JoinColumn(name = "supplier_id")

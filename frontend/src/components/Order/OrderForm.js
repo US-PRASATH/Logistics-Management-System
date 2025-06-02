@@ -124,7 +124,7 @@ const OrderForm = () => {
             value={formData.customerName}
             onChange={handleChange}
             required
-            className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
 
@@ -161,11 +161,11 @@ const OrderForm = () => {
             value={formData.quantity}
             onChange={handleChange}
             required
-            className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
 
-        <div>
+        {/*<div>
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">
             Status
           </label>
@@ -181,7 +181,7 @@ const OrderForm = () => {
             <option value="DELIVERED">Delivered</option>
             <option value="CANCELLED">Cancelled</option>
           </select>
-        </div>
+        </div>*/}
 
         <div>
           <label htmlFor="location" className="block text-sm font-medium text-gray-700">
@@ -194,7 +194,7 @@ const OrderForm = () => {
             value={formData.location}
             onChange={handleChange}
             required
-            className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
 

@@ -135,7 +135,7 @@ const Dashboard = () => {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">${revenue.total.toFixed(2)}</div>
+                    <div className="text-2xl font-semibold text-gray-900">₹{revenue.total.toFixed(2)}</div>
                   </dd>
                 </dl>
               </div>

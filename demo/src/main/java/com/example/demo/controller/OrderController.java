@@ -33,6 +33,11 @@ public class OrderController {
         return ResponseEntity.ok(service.getAllOrders());
     }
 
+    @GetMapping("/transport-plans")
+    public ResponseEntity<List<Order>> getOrdersWithoutTransportPlans() {
+        return ResponseEntity.ok(service.getAllOrdersWithoutTransportPlans());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(service.getOrderById(id));

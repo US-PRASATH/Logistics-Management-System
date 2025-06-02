@@ -49,6 +49,10 @@ public class Shipment{
     @JoinColumn(name = "order_id")
     private Order order;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
 
     public enum Status{
         IN_TRANSIT,

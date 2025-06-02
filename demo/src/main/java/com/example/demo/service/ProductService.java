@@ -23,21 +23,25 @@ public class ProductService {
         this.supplierRepo = supplierRepo;
     }
 
+      @Autowired
+    private TenantService tenantService;
+
     public List<Product> getAllProducts() {
-        return productRepo.findAll();
+        return productRepo.findByUserId(tenantService.getCurrentUserId());
     }
 
     public Product getProductById(Long id) {
-        return productRepo.findById(id)
+        return productRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
             .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
     }
 
     public Product createProduct(Product product) {
         if (product.getSupplier() != null && product.getSupplier().getId() != null) {
-            Supplier supplier = supplierRepo.findById(product.getSupplier().getId())
+            Supplier supplier = supplierRepo.findByIdAndUserId(product.getSupplier().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
             product.setSupplier(supplier);
         }
+        product.setUser(tenantService.getCurrentUser());
         return productRepo.save(product);
     }
 
@@ -52,7 +56,7 @@ public class ProductService {
             productDetails.getPrice() : existingProduct.getPrice());
 
         if (productDetails.getSupplier() != null && productDetails.getSupplier().getId() != null) {
-            Supplier supplier = supplierRepo.findById(productDetails.getSupplier().getId())
+            Supplier supplier = supplierRepo.findByIdAndUserId(productDetails.getSupplier().getId(), tenantService.getCurrentUserId())
                 .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
             existingProduct.setSupplier(supplier);
         }
@@ -60,8 +64,20 @@ public class ProductService {
         return productRepo.save(existingProduct);
     }
 
+    // public void deleteProduct(Long id) {
+    //     Product product = getProductById(id);
+    //     productRepo.delete(product);
+    // }
+
     public void deleteProduct(Long id) {
-        Product product = getProductById(id);
-        productRepo.delete(product);
-    }
+    Long userId = tenantService.getCurrentUserId();
+
+    // Ensure the product belongs to the user
+    productRepo.findByIdAndUserId(id, userId)
+        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
+
+    // Safe and efficient deletion
+    productRepo.deleteByIdAndUserId(id, userId);
+}
+
 }

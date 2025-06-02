@@ -15,16 +15,20 @@ public class SupplierService {
     @Autowired
     private SupplierRepository repo;
 
+      @Autowired
+    private TenantService tenantService;
+
     public List<Supplier> getAllSuppliers() {
-        return repo.findAll();
+        return repo.findByUserId(tenantService.getCurrentUserId());
     }
 
     public Supplier getSupplierById(Long id) {
-        return repo.findById(id)
+        return repo.findByIdAndUserId(id, tenantService.getCurrentUserId())
             .orElseThrow(() -> new EntityNotFoundException("Supplier not found with id: " + id));
     }
 
     public Supplier createSupplier(Supplier supplier) {
+        supplier.setUser(tenantService.getCurrentUser());
         return repo.save(supplier);
     }
 
@@ -43,8 +47,20 @@ public class SupplierService {
         return repo.save(existingSupplier);
     }
 
+    // public void deleteSupplier(Long id) {
+    //     Supplier supplier = getSupplierById(id);
+    //     repo.delete(supplier);
+    // }
+
     public void deleteSupplier(Long id) {
-        Supplier supplier = getSupplierById(id);
-        repo.delete(supplier);
-    }
+    Long userId = tenantService.getCurrentUserId();
+
+    // Ensure the supplier belongs to the user
+    repo.findByIdAndUserId(id, userId)
+        .orElseThrow(() -> new EntityNotFoundException("Supplier not found with id: " + id));
+
+    // Delete in a tenant-safe way
+    repo.deleteByIdAndUserId(id, userId);
+}
+
 }
