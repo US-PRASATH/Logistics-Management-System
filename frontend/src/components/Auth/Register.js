@@ -141,7 +141,7 @@ const Register = () => {
               />
             </div>
             
-            <div>
+            {/* <div>
               <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                 Role
               </label>
@@ -157,7 +157,7 @@ const Register = () => {
                 <option value="TRANSPORTER">Transporter</option>
                 <option value="WAREHOUSE_MANAGER">Warehouse Manager</option>
               </select>
-            </div>
+            </div> */}
           </div>
 
           <div>
