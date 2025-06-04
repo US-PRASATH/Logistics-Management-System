@@ -30,40 +30,76 @@ public class WarehouseService {
       @Autowired
     private TenantService tenantService;
 
-    public List<WarehouseItem> getAllWarehouseItems() {
-        return warehouseItemRepo.findByUserId(tenantService.getCurrentUserId());
+    public List<WarehouseItem> getAllWarehouseItems(Long warehouseId) {
+        return warehouseItemRepo.findByWarehouseIdAndUserId(warehouseId, tenantService.getCurrentUserId());
     }
 
-    public WarehouseItem getWarehouseItemById(Long id) {
-        return warehouseItemRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
+    public WarehouseItem getWarehouseItemById(Long warehouseId, Long id) {
+        return warehouseItemRepo.findByWarehouseIdAndIdAndUserId(warehouseId, id, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("WarehouseItem not found with ID: " + id));
     }
 
-    @Transactional
-    public void createWarehouseItem(WarehouseItem warehouseItem) {
-        // Validate and set Warehouse
-        if (warehouseItem.getWarehouse() == null || warehouseItem.getWarehouse().getId() == null) {
-            throw new IllegalArgumentException("Warehouse ID is mandatory");
-        }
-        Warehouse warehouse = warehouseRepo.findByIdAndUserId(warehouseItem.getWarehouse().getId(), tenantService.getCurrentUserId())
-                .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + warehouseItem.getWarehouse().getId()));
-        warehouseItem.setWarehouse(warehouse);
+//     @Transactional
+//     public void createWarehouseItem(Long warehouseId, WarehouseItem warehouseItem) {
+//         // Validate and set Warehouse
+//         if (warehouseItem.getWarehouse() == null || warehouseItem.getWarehouse().getId() == null) {
+//             throw new IllegalArgumentException("Warehouse ID is mandatory");
+//         }
+//         Warehouse warehouse = warehouseRepo.findByIdAndUserId(warehouseItem.getWarehouse().getId(), tenantService.getCurrentUserId())
+//                 .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + warehouseItem.getWarehouse().getId()));
+//         warehouseItem.setWarehouse(warehouse);
 
-        // Validate and set Product
-        if (warehouseItem.getProduct() == null || warehouseItem.getProduct().getId() == null) {
-            throw new IllegalArgumentException("Product ID is mandatory");
-        }
-        Product product = productRepo.findByIdAndUserId(warehouseItem.getProduct().getId(), tenantService.getCurrentUserId())
-                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + warehouseItem.getProduct().getId()));
-        warehouseItem.setProduct(product);
-        warehouseItem.setUser(tenantService.getCurrentUser());
-        warehouseItem.getWarehouse().setRemainingCapacity(warehouseItem.getWarehouse().getRemainingCapacity() - warehouseItem.getQuantity());
-        warehouseItemRepo.save(warehouseItem);
+//         // Validate and set Product
+//         if (warehouseItem.getProduct() == null || warehouseItem.getProduct().getId() == null) {
+//             throw new IllegalArgumentException("Product ID is mandatory");
+//         }
+//         Product product = productRepo.findByIdAndUserId(warehouseItem.getProduct().getId(), tenantService.getCurrentUserId())
+//                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + warehouseItem.getProduct().getId()));
+//                 if (warehouse.getRemainingCapacity() < warehouseItem.getQuantity()) {
+//     throw new RuntimeException("Not enough space in the warehouse.");
+// }
+
+//         warehouseItem.setProduct(product);
+//         warehouseItem.setUser(tenantService.getCurrentUser());
+//         warehouseItem.getWarehouse().setRemainingCapacity(warehouseItem.getWarehouse().getRemainingCapacity() - warehouseItem.getQuantity());
+//         warehouseItemRepo.save(warehouseItem);
+//     }
+
+@Transactional
+public void createWarehouseItem(Long warehouseId, WarehouseItem warehouseItem) {
+    // Force use of path variable ID over any ID from body
+    Warehouse warehouse = warehouseRepo.findByIdAndUserId(warehouseId, tenantService.getCurrentUserId())
+            .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + warehouseId));
+    warehouseItem.setWarehouse(warehouse);
+
+    // Validate and set Product
+    if (warehouseItem.getProduct() == null || warehouseItem.getProduct().getId() == null) {
+        throw new IllegalArgumentException("Product ID is mandatory");
     }
 
+    Product product = productRepo.findByIdAndUserId(warehouseItem.getProduct().getId(), tenantService.getCurrentUserId())
+            .orElseThrow(() -> new RuntimeException("Product not found with ID: " + warehouseItem.getProduct().getId()));
+
+    // Check capacity
+    if (warehouse.getRemainingCapacity() < warehouseItem.getQuantity()) {
+        throw new RuntimeException("Not enough space in the warehouse.");
+    }
+
+    // Update warehouse capacity
+    warehouse.setRemainingCapacity(warehouse.getRemainingCapacity() - warehouseItem.getQuantity());
+    warehouseRepo.save(warehouse); // Needed if cascade is not set
+
+    // Final associations
+    warehouseItem.setProduct(product);
+    warehouseItem.setUser(tenantService.getCurrentUser());
+
+    warehouseItemRepo.save(warehouseItem);
+}
+
+
     @Transactional
-    public void updateWarehouseItem(Long id, WarehouseItem warehouseItem) {
-        WarehouseItem existingWarehouseItem = warehouseItemRepo.findByIdAndUserId(id, tenantService.getCurrentUserId())
+    public void updateWarehouseItem(Long warehouseId, Long id, WarehouseItem warehouseItem) {
+        WarehouseItem existingWarehouseItem = warehouseItemRepo.findByWarehouseIdAndIdAndUserId(warehouseId, id, tenantService.getCurrentUserId())
                 .orElseThrow(() -> new RuntimeException("WarehouseItem not found with ID: " + id));
 
         // Update fields if provided
@@ -73,9 +109,24 @@ public class WarehouseService {
         if (warehouseItem.getCategory() != null) {
             existingWarehouseItem.setCategory(warehouseItem.getCategory());
         }
+        // if (warehouseItem.getQuantity() != null) {
+        //     existingWarehouseItem.setQuantity(warehouseItem.getQuantity());
+        // }
         if (warehouseItem.getQuantity() != null) {
-            existingWarehouseItem.setQuantity(warehouseItem.getQuantity());
+    int oldQuantity = existingWarehouseItem.getQuantity();
+    int newQuantity = warehouseItem.getQuantity();
+    int diff = newQuantity - oldQuantity;
+
+    
+    // Adjust remaining capacity
+    Warehouse warehouse = existingWarehouseItem.getWarehouse();
+    if (diff > 0 && warehouse.getRemainingCapacity() < diff) {
+            throw new IllegalArgumentException("Not enough capacity in the warehouse to increase quantity");
         }
+    warehouse.setRemainingCapacity(warehouse.getRemainingCapacity() - diff);
+
+    existingWarehouseItem.setQuantity(newQuantity);
+}
         if (warehouseItem.getStorageLocation() != null) {
             existingWarehouseItem.setStorageLocation(warehouseItem.getStorageLocation());
         }
@@ -116,11 +167,11 @@ public class WarehouseService {
     // }
 
     @Transactional
-public void deleteWarehouseItem(Long id) {
+public void deleteWarehouseItem(Long warehouseId, Long id) {
     Long currentUserId = tenantService.getCurrentUserId();
 
     // Strictly fetch only if the item belongs to current user
-    Optional<WarehouseItem> optionalWarehouseItem = warehouseItemRepo.findByIdAndUserId(id, currentUserId);
+    Optional<WarehouseItem> optionalWarehouseItem = warehouseItemRepo.findByWarehouseIdAndIdAndUserId(warehouseId, id, currentUserId);
 
     if (optionalWarehouseItem.isEmpty()) {
         throw new RuntimeException("WarehouseItem not found or unauthorized access with ID: " + id);
@@ -134,10 +185,12 @@ public void deleteWarehouseItem(Long id) {
     );
 
     // Save updated warehouse item just to persist the capacity update
-    warehouseItemRepo.save(warehouseItem);
+    // warehouseItemRepo.save(warehouseItem);
+    warehouseRepo.save(warehouseItem.getWarehouse());
+
 
     // Now safely delete
-    warehouseItemRepo.deleteByIdAndUserId(id, currentUserId);
+    warehouseItemRepo.deleteByWarehouseIdAndIdAndUserId(warehouseId, id, currentUserId);
 }
 
 }

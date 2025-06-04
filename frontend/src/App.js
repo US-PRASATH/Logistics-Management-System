@@ -26,6 +26,8 @@ import ExpensesForm from './components/Expenses/ExpensesForm';
 import RevenueReport from './components/Revenue/RevenueReport';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import { AuthProvider } from './components/context/AuthContext';
+import WarehouseInventory from './components/Warehouse/WarehouseInventory';
+import WarehouseInventoryForm from './components/Warehouse/WarehouseInventoryForm';
 
 function App() {
   return (
@@ -122,7 +124,22 @@ function App() {
                 <WarehouseForm />
               </ProtectedRoute>
             } />
-            
+            <Route path="/warehouses/:warehouseId/warehouse-items" element={
+              <ProtectedRoute>
+                <WarehouseInventory />
+              </ProtectedRoute>
+            } />
+            <Route path="/warehouses/:warehouseId/warehouse-items/:id" element={
+              <ProtectedRoute>
+                <WarehouseInventoryForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/warehouses/:warehouseId/warehouse-items/new" element={
+              <ProtectedRoute>
+                <WarehouseInventoryForm />
+              </ProtectedRoute>
+            } />
+
             <Route path="/shipments" element={
               <ProtectedRoute>
                 <ShipmentList />

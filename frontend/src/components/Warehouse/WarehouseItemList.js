@@ -139,7 +139,7 @@ const WarehouseList = () => {
                 </div>
                 <div className="bg-gray-50 px-4 py-4 sm:px-6">
                   <Link
-                    to="/warehouse-items"
+                    to={`/warehouses/${warehouse.id}/warehouse-items`}
                     className="text-sm font-medium text-blue-600 hover:text-blue-500"
                   >
                     View inventory
